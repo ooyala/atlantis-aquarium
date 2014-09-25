@@ -1,0 +1,13 @@
+# This is the supervisor config file. Uncomment lines you want to use.
+#
+# save_dir       = "save"          # The directory to save state (for recovery if supervisor panics)
+# num_containers = 100             # The total number of containers that supervisor can allocate
+# num_secondary  = 5               # The number of secondary ports that supervisor will allocate per container
+# cpu_shares     = 100             # The total number of cpu shares that supervisor can allocate
+memory_limit   = 1024            # The total number of Megabytes of memory that supervisor can allocate
+# min_port       = 61000           # The minimum port to use.
+rpc_addr       = ":1337"         # The RPC address to listen on
+registry_host  = "<%= @registry_host %>"     # The Registry to talk to
+region         = "dev"           # The region this supervisor is in
+zone           = "deva"           # The availability zone this supervisor is in
+price		   = 13.37

@@ -1,0 +1,12 @@
+LDAP
+import zookeeper applications/environments from prod
+Chef-ize setup.
+Test Internal and External routers
+non-Jenkins builder
+mount log directories for convenient access
+set up all the proper port forwards for containers
+Configure so that Aquarium can be run as an Atlantis application.
+In-place upgrades (at least for supervisors)
+Optimize:
+  - parallelize startup
+  - Figure out why Docker pulls are so slow, even through Squid.

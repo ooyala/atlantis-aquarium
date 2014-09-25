@@ -1,0 +1,333 @@
+#!/usr/bin/env ruby
+
+# Aquarium controller
+#
+# Controls the aquarium VM in a convenient manner.
+#
+# TODO:
+# - replace shell scripts with more principled Ruby.
+# - store state in a config file instead of various subfiles.
+# - Implement all the subcommands properly.
+# - Dependencies (e.g., `start manager` should also `start zookeeper`).
+# - Install from packages instead of source every time.
+
+require "docopt"
+require_relative "../lib/components"
+require_relative "../lib/executer"
+require_relative "../lib/provision"
+require_relative "../lib/status"
+
+COMPONENTS_MESSAGE = <<MESSAGE
+  Valid components are:
+#{Component.names.map { |c| "    #{c}"}.join("\n")}
+MESSAGE
+
+usage = <<USAGE
+Atlantis aquarium controller
+
+Usage:
+  #$0 build   [<component>...] [options] [-c | --compile] [-i | --image]
+  #$0 start   [<component>...] [options]
+  #$0 restart  <component>...  [options]
+  #$0 stop     <component>...  [options]
+  #$0 ssh     [<component>]    [options] [command...]
+  #$0 atlantis [<arguments>...]
+  #$0 provision
+  #$0 register-components
+  #$0 base-cluster
+  #$0 build-layers  [--base] [--builder]
+
+Options:
+  -C, --compile  Only compile; don't build image or deploy
+  -I, --image    Only compile and build Docker image; don't deploy
+  -i, --instance Which instance of the component to act on [default: all]
+  -h, --help     Show usage
+
+#{COMPONENTS_MESSAGE}
+USAGE
+
+def validate_options(options)
+  unknown_components = options["<component>"] - Component.names - ["all"]
+  if !unknown_components.empty?
+    puts "Unknown component(s): #{unknown_components.join(", ")}\n#{COMPONENTS_MESSAGE}"
+    exit 1
+  end
+end
+
+# Docopt doesn't have any way to ignore dashed arguments; we want to be able to do things like
+#   atlantis-aquarium atlantis -R dev list-containers
+# So we figure out where the command starts, and slice them out of ARGV before docopt.
+def preprocess_arguments_for_commands(args)
+  # All arguments should be passed through to the atlantis command.
+  if args[0] == "atlantis"
+    return args.slice!(1..-1)
+  end
+  if args[0] == "ssh"
+    arg_index = 1
+    arg_index += 1 if Component.names.include?(args[1]) # Skip <component>, if it exists
+    while arg_index < args.length
+      break if args[arg_index][0] != "-"
+      arg_index += 1 if args[arg_index] == "-i"
+      arg_index += 1
+    end
+    return [] unless arg_index < args.length
+    puts "slicing #{arg_index.inspect}"
+    return args.slice!(arg_index..-1)
+  end
+  return []
+end
+
+def compile(component)
+  # A component without a repo (e.g., zookeeper) is assumed to not need to compile.
+  return unless component.repo
+  executer = Executer.new
+  executer.cd(component.directory)
+  component.precompile.call(executer)
+  executer.run_in_vm!("rm -f *.deb")
+  executer.run_in_vm!("make -C #{component.repo}/ clean deb")
+  component.debs.each do |deb|
+    executer.run_in_vm!("cp #{component.repo}/pkg/#{deb}_*.deb #{deb}.deb")
+  end
+  component.postcompile.call(executer)
+end
+
+def build_image(component)
+  executer = Executer.new
+  executer.cd(component.directory)
+  component.preimage.call(executer)
+  executer.run_in_vm!("docker build -t #{component.image_name} .")
+  component.postimage.call(executer)
+end
+
+def start(component)
+  return if component.name == "base-aquarium-image" # This one doesn't make sense to deploy.
+  component.set_status("starting")
+  instance_suffix = component.instance ? "-#{component.instance}" : ""
+  cidfile = "cidfile#{instance_suffix}"
+  ipfile = "ip#{instance_suffix}"
+  executer = Executer.new
+  executer.cd(component.directory)
+  component.prestart.call(executer)
+  # TODO(edanaher): This data should be stored in a nice state file.
+  success = executer.run_in_vm("if [ -f #{cidfile} ]; then docker ps | grep -q $(cut -c1-8 #{cidfile}); else false; fi")
+  if success
+    puts "#{component.name} already running"
+  else
+    executer.run_in_vm!("rm -f #{cidfile}")
+    docker_opts = "-d -t --cidfile #{cidfile} #{component.docker_opts}"
+    executer.run_in_vm!("docker run #{docker_opts} aquarium-#{component.name}")
+
+    cid = File.read("#{component.directory}/#{cidfile}").chomp
+    ip = executer.capture("docker inspect #{cid} | grep IPAddress | cut -d\\\" -f4")
+    File.write("#{component.directory}/#{ipfile}", ip)
+    component.set_value("cid", cid.chomp)
+    component.set_value("ip", ip.chomp)
+  end
+  component.poststart.call(executer)
+  component.set_status("running")
+end
+
+def stop(component)
+  return if component.name == "base-aquarium-image" # This one doesn't make sense to deploy.
+  component.set_status("stopping")
+  component.set_value("cid", nil)
+  component.set_value("ip", nil)
+  instance_suffix = component.instance ? "-#{component.instance}" : ""
+  cidfile = "cidfile#{instance_suffix}"
+  executer = Executer.new
+  executer.cd(component.directory)
+  # TODO(edanaher): This data should be stored in a nice state file.
+  executer.run_in_vm("if [ -f #{cidfile} ]; then docker kill $(cat #{cidfile}); fi")
+  executer.run_in_vm!("rm -f #{cidfile}")
+  component.set_status("stopped")
+end
+
+def restart(component)
+  stop(component)
+  start(component)
+end
+
+# NOTE(edanaher) This is a terrible hack, but the http_proxy environment variable isn't passed through to the
+# build scripts.  In the interest of saving ~300MB of bandwidth and a minute or so, hack the scripts up to go
+# through the proxy.
+def send_builder_through_proxy
+  executer = Executer.new
+  executer.cd("data/builder")
+  proxy = "http_proxy=http://172.17.42.1:3128"
+
+  # Fix base builder script
+  mkbase = "/opt/atlantis/builder/bin/atlantis-mkbase"
+  line_to_fix = %Q{chroot /tmp/base /bin/bash -c \\"su - -c /sbin/provision\\"}
+  fixed_line = %Q{chroot /tmp/base /bin/bash -c \\"su - -c #{proxy}\\\\\\\\ /sbin/provision\\"}
+  executer.run_in_vm!(%Q{ssh `cat ip` "sed 's;^#{line_to_fix}$;#{fixed_line};' #{mkbase} -i"})
+
+  # Fix builder layer scripts
+  previous_line = %Q{exec > /sbin/provision_type.log 2>&1}
+  new_line = %Q{export #{proxy}}
+  builder_prefix = "/opt/atlantis/builder/layers/builder"
+  strip_go_https_url="s;https://go.googlecode.com/files/go;http://go.googlecode.com/files/go;"
+  command = "sed 's;^#{previous_line}$;&\\n#{new_line};;#{strip_go_https_url}' \\$d/sbin/provision_type -i"
+  puts command
+  executer.run_in_vm!(%Q{ssh `cat ip` "for d in #{builder_prefix}/*; do #{command}; done"})
+end
+
+def build_layers(base, builder)
+  send_builder_through_proxy
+  executer = Executer.new
+  executer.cd("data/builder")
+  if base
+    mkbase = "/opt/atlantis/builder/bin/atlantis-mkbase"
+    if !File.exists?("data/builder/images/tiny.tgz")
+      raise "Error: file data/builder/iamges/tiny.tgz does not exist.  Images cannot be built"
+    end
+    executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` http_proxy=http://172.17.42.1:3128 #{mkbase} -f /root/images/tiny.tgz"})
+  end
+  if builder
+    builder = "/opt/atlantis/builder/bin/atlantis-builder"
+    executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` http_proxy=http://172.17.42.1:3128 #{builder} -boot"})
+  end
+end
+
+def register_components
+  executer = Executer.new("data")
+  manager = "atlantis-manager -R dev"
+
+  # TODO(edanaher): This shouldn't be necessary.
+  executer.run_in_vm!(%q{echo 'create /atlantis/ip_groups ""' | /usr/share/zookeeper/bin/zkCli.sh -server $(cat zookeeper/ip)})
+  executer.run_in_vm!(%q{echo 'create /atlantis/ip_groups/dev ""' | /usr/share/zookeeper/bin/zkCli.sh -server $(cat zookeeper/ip)})
+
+  # Set credentials and create environment
+  executer.run_in_vm!("echo vagrant | #{manager} create-env -n test")
+
+  # Register supervisors
+  (1..3).each do |s|
+    executer.run_in_vm!("#{manager} register-supervisor -H $(cat supervisor/ip-#{s})")
+  end
+
+  # Register routers
+  executer.run_in_vm!("#{manager} register-router -z deva -H `cat router/ip-internal` -i `cat router/ip-internal` --internal --wait")
+  executer.run_in_vm!("#{manager} register-router -z deva -H `cat router/ip-external` -i `cat router/ip-external` --wait")
+
+  # "Register" manager for deploys
+  executer.run_in_vm!("#{manager} add-role -r dev -H aquarium-manager -l deploys -t write")
+  executer.run_in_vm!("#{manager} add-role -r dev -H aquarium-manager -l deploys -t read")
+
+end
+
+def start_apps
+  executer = Executer.new("data")
+  manager = "atlantis-manager -R dev"
+  repo_root = "file:///root/repos"
+  apps = {"hello-go" => ["10ba55264d25b67ba34a848fcca4699ebb66bf41", true, nil],
+          "hello-ruby" => ["bd4625f0d77d08846b0a10ad07b6a2756b559b26", true, nil],
+          "hello-proxy-go" => ["bccae2fa5a9765ccb00ef399f006b7b00b274a3f", false, nil],
+          "log_hog" => ["ee5a3adbc33b9009ad960d0a8e3092012c2fce91", true, "test_apps"]}
+
+  # Register apps
+  apps.each do |app, config|
+    sha, internal, parent = config
+    i = internal ? "-i" : ""
+    repo = parent || app
+    root = parent ? "/#{app}" : "/"
+    executer.run_in_vm!("#{manager} register-app -a #{app} #{i} -g #{repo_root}/#{repo} -r #{root} -e me@example.com")
+  end
+
+  # Configure hello-proxy-go dependency on hello-go
+  # TODO(edanaher): Read from stdin.
+  executer.run_in_vm!(%Q{echo '{"name": "test"}' > data})
+  executer.run_in_vm!("#{manager} add-depender-env-data-for-depender-app -a hello-go -r hello-proxy-go -f data")
+  executer.run_in_vm!("rm data")
+
+  #deploy apps
+  c = 5
+  m = 64
+  apps.each do |name, config|
+    sha, internal = config
+    executer.run_in_vm!("#{manager} deploy -a #{name} -s #{sha} -e test --dev --wait -c #{c} -m #{m}")
+    c += 5
+    m *= 2
+  end
+end
+
+if __FILE__ == $0
+  trailing_args = preprocess_arguments_for_commands(ARGV)
+
+  begin
+    options = Docopt::docopt(usage)
+  rescue Docopt::Exit => e
+    puts e.message
+    exit 1
+  end
+
+  puts options.inspect
+  validate_options(options)
+
+  Executer.ensure_in_vm(trailing_args)
+
+  if options["<component>"].empty? || options["<component>"].include?("all")
+    # TODO(edanaher): Use components.all once dependencies work.
+    options["<component>"] = %w{zookeeper base-aquarium-image registry builder manager router supervisor}
+  end
+  components = [options["<component>"]].flatten.map { |c| Component[c] }
+
+  if options["provision"]
+    Provision.provision
+  elsif options["build-layers"]
+    both = !(options["--base"] ^ options["--builder"])
+    build_layers(both || options["--base"], both || options["--builder"])
+  elsif options["build"]
+    components.each do |component|
+      component.set_status("compiling")
+      compile(component)
+      component.set_status("building")
+      build_image(component) unless options["--compile"] > 0
+      component.set_status("built")
+      component.each_instance(options["--instance"]) do |instance|
+        restart(instance) unless options["--compile"] > 0 || options["--image"] > 0
+      end
+    end
+  elsif options["register-components"]
+    register_components
+  elsif options["base-cluster"]
+    start_apps
+  elsif options["start"]
+    components.each do |component|
+      component.each_instance(options["--instance"]) do |instance|
+        start(instance)
+      end
+    end
+  elsif options["stop"]
+    components.each do |component|
+      component.each_instance(options["--instance"]) do |instance|
+        stop(instance)
+      end
+    end
+  elsif options["restart"]
+    components.each do |component|
+      component.each_instance(options["--instance"]) do |instance|
+        restart(instance)
+      end
+    end
+  elsif options["atlantis"]
+    Executer.new.run_in_vm!("atlantis -R dev #{trailing_args.join(" ")}")
+  elsif options["ssh"]
+    if components.length > 1 # no component gets converted to all components
+      if trailing_args.empty?
+        # Running a shell in the VM is just a local shell after ensure_in_vm().
+        system("bash")
+      else
+        system(trailing_args.join(" "))
+      end
+    else
+      components[0].each_instance(options["--instance"]) do |instance|
+        instance_name = instance.instance ? "-#{instance.instance}" : ""
+        puts "== ssh #{components[0].name}#{instance_name} =="
+        status = Status.read
+        info = status[instance.name]
+        info = info[instance.instance] if instance.instance
+        ip = info["ip"]
+        Executer.new.run_in_vm!("ssh #{ip} #{trailing_args.join(" ")}")
+      end
+    end
+  end
+end

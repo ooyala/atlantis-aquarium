@@ -1,0 +1,15 @@
+{
+  "api": {
+    "addr" : ":80",
+    "default_headers": {
+      "X-Docker-Registry-Version": ["0.6.5"],
+      "X-Docker-Registry-Config": ["s3"]
+    }
+  },
+  "storage": {
+    "type": "local",
+    "local": {
+      "root" : "/atlantis-docker/"
+    }
+  }
+}

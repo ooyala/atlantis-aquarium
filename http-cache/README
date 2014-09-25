@@ -1,0 +1,4 @@
+This file is here mostly because git doesn't like empty directories.
+
+This directory is where Squid's proxy is stored in the VM; this lets it persist across restarts, which is
+wonderful for development speed.

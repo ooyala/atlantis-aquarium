@@ -1,0 +1,62 @@
+# This is the atlantis manager config file. Uncomment lines you want to use.
+#
+
+#### Basic Configuration
+# rpc_addr               = ":1338"          # The RPC address to listen on
+# api_addr               = ":443"           # The HTTP API address to listen on
+# supervisor_port        = 1337             # The RPC port supervisor listens on
+zookeeper_uri          = "<%= @zookeeper_host %>" # The zookeeper to connect to
+# result_duration        = "30m"            # The amount of time to save the results of async commands
+host                   = "aquarium-manager" # This manager's host (used to register itself)
+region                 = "dev"            # The region this manager is in
+zone                   = "deva"            # The availability zone this manager is in
+available_zones        = "deva"            # The available availability zones for this manager's region
+
+#### SMTP Configuration
+# smtp_addr              = ""
+# smtp_from              = ""
+# smtp_cc                = ""
+
+#### Jenkins
+# jenkins_uri            = "localhost:8080" # The jenkins uri to hit
+# jenkins_uri            = "jenkins-master.sv2:8080"     # The jenkins uri to hit
+# jenkins_job            = "atlantis-build" # The jenkins job name
+
+simple_builder_host      = "<%= @simple_builder_host %>"
+
+#### CGroups
+# cpu_shares_increment   = 5   # The increment in which to allow CPU shares
+# memory_limit_increment = 128 # The increment in which to allow Memory Limits (Megabytes)
+
+#### LDAP
+# ldap_host              = ""  # The ldap host to use. empty for no auth.
+# ldap_port              = 636 # The ldap port to use
+# ldap_basedomain        = ""  # The ldap base domain to use
+
+#### LDAP User/Team/Application (UTA) Authorization (All fields required unless skip_authorization = true)
+skip_authorization = true           # Skip the checks for the details below and disables UTA authorization
+# ldap_user_common_name_prefix = "" # LDAP common name prefix for users in Distinguished names (e.g. "cn")
+# ldap_team_common_name_prefix = "" # LDAP common name prefix for teams in Distingusihed names (e.g. "cn")
+# ldap_user_search_base = ""        # LDAP base for searching users
+# ldap_team_search_base = ""        # LDAP base for searching teams
+# ldap_username_attr = ""           # LDAP Attribute Class for members under teams
+# ldap_team_class = ""              # LDAP Object Class for Teams
+# ldap_team_admin_attr = ""         # LDAP Attribute Class for Team Admins
+# ldap_app_class = ""               # LDAP Object Class for Allowed Apps
+# ldap_allowed_app_attr = ""        # LDAP Attribute Class for Allowed Apps
+# ldap_user_class = ""              # LDAP User Object Class
+# ldap_user_class_attr = ""         # LDAP User Object Class Attribute
+# ldap_super_user_group = ""        # LDAP Writers Group Distinguished Name (i.e. for tearing down all apps)
+
+#### Route53
+# enable_route53   = false # Enable Route53 DNS for internal apps
+# route53_ttl      = 10    # Route53 TTL (seconds)
+# [route53_zones]
+# some_region      = ""    # Route53 Hosted Zone ID
+
+dns_provider = "dnsmasq"
+dnsmasq_file = "/host/etc/aquarium/hosts-manager"
+
+#### Router
+# min_router_port = 49152 # Minimum Port for Router
+# max_router_port = 65535 # Maximum Port for Router
