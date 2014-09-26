@@ -266,7 +266,7 @@ if __FILE__ == $0
 
   if options["<component>"].empty? || options["<component>"].include?("all")
     # TODO(edanaher): Use components.all once dependencies work.
-    options["<component>"] = %w{zookeeper base-aquarium-image registry builder manager router supervisor}
+    options["<component>"] = %w{base-aquarium-image zookeeper registry builder manager router supervisor}
   end
   components = [options["<component>"]].flatten.map { |c| Component[c] }
 

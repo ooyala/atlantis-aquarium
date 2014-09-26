@@ -1,4 +1,4 @@
-FROM registry1.sjc1-s.atlantis.staging.services.ooyala.com/base/precise64-0.5.0
+FROM aquarium-base
 MAINTAINER appsplat-team@ooyala.com
 
 # TODO(edanaher): Do this dynamically based on gateway, if 3128 responds.
