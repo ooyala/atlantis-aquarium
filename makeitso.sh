@@ -5,10 +5,10 @@ set -ex
 function print() {
 	echo [33m"$@"[0m
 }
-
 print "==== Bringing vagrant up ===="
-vagrant up aquarium
-vagrant ssh aquarium -c 'sudo gem install docopt'
+vagrant up $aquarium
+vagrant ssh $aquarium -c 'sudo apt-get install ruby'
+vagrant ssh $aquarium -c 'sudo gem install docopt'
 
 print "==== Provisioning ===="
 bin/atlantis-aquarium provision

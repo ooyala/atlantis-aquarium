@@ -16,6 +16,7 @@ class Provision
       install_squid
       configure_apt
       install_misc_packages
+      install_docker_lxc
       configure_docker
       configure_dnsmasq
       configure_parallel
@@ -57,10 +58,22 @@ EOF})
     def configure_apt
       executer = Executer.new("data/setup")
       # send apt through squid for caching
-      executer.run_in_vm!("sudo apt-get update -qq")
       executer.run_in_vm!("echo 'Acquire::http::Proxy \"http://localhost:3128\";' | " +
                          "sudo tee /etc/apt/apt.conf.d/99http-proxy > /dev/null")
+      executer.run_in_vm!("echo 'Acquire::https::Proxy \"https://localhost:3128\";' | " +
+                         "sudo tee --append /etc/apt/apt.conf.d/99http-proxy > /dev/null")
+      executer.run_in_vm!("sudo apt-get update")
+      executer.run_in_vm!("sudo apt-get install apt-transport-https")
+      executer.run_in_vm!("sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9")
+      executer.run_in_vm!("sudo sh -c 'echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list'")
+      executer.run_in_vm!("sudo apt-get update -qq")
     end
+
+    def install_docker_lxc
+      executer = Executer.new("data/setup")
+      executer.run_in_vm!("sudo apt-get install lxc-docker")
+    end
+
 
     def install_misc_packages
       executer = Executer.new("data/setup")

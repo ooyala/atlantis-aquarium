@@ -3,7 +3,7 @@ domain   = "local"
 
 Vagrant.configure("2") do |config|
   config.vm.define "aquarium" do |aquarium|
-    aquarium.vm.box = "ubuntu1204"
+    aquarium.vm.box = ENV["ATLANTIS_VM_BOX"] || "ubuntu1204"
     aquarium.vm.box_url = "http://mirrors.ooyala.com/vagrant/ubuntu1204.box"
 
     aquarium.vm.hostname = [hostname,domain].join('.')
@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
     end
 
     # Mounts for Atlantis
-    aquarium.vm.synced_folder (ENV['OOYALA_REPO_ROOT'] || "#{ENV['HOME']}/repos"), "/home/vagrant/repos"
+    aquarium.vm.synced_folder (ENV['ATLANTIS_REPO_ROOT'] || "#{ENV['HOME']}/repos"), "/home/vagrant/repos"
 
     # Caching
     aquarium.vm.synced_folder "http-cache", "/var/spool/squid3", :owner => "proxy", :group => "proxy"
