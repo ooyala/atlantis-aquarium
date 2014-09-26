@@ -167,7 +167,7 @@ class Component
         docker_opts: "-v /etc/aquarium:/host/etc/aquarium -p 443:443"
       },
       "registry" => {debs: ["atlantis-registry"],
-                     repo: "atlantis-registry"},
+                     repo: "go-docker-registry"},
       "router" => {
         debs: ["atlantis-router"],
         repo: "atlantis-router",
