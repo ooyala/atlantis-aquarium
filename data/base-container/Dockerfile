@@ -2,7 +2,7 @@ FROM ubuntu:14.04
 MAINTAINER appsplat-team@ooyala.com
 
 RUN apt-get update
-RUN apt-get -y install curl
+RUN apt-get -y install curl runit
 RUN rm -rf /etc/service/rsyslog
 ENV SSHD_PORT 22
 # TODO(edanaher): Do this dynamically based on gateway, if 3128 responds.
