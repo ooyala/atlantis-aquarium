@@ -86,7 +86,7 @@ def compile(component)
   executer.run_in_vm!("rm -f *.deb")
   executer.run_in_vm!("make -C #{component.repo}/ clean deb")
   component.debs.each do |deb|
-    executer.run_in_vm!("cp #{component.repo}/pkg/#{deb}_*.deb #{deb}.deb")
+    executer.run_in_vm!("cp #{component.repo}/#{deb}_*.deb #{deb}.deb")
   end
   component.postcompile.call(executer)
 end
