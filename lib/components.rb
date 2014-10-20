@@ -125,7 +125,7 @@ class Component
       },
       "builder" => {
         debs: ["atlantis-builder", "atlantis-builderd"],
-        repo: "ooyala-builder",
+        repo: "atlantis-builder",
         preimage: lambda do |component|
           FileUtils.cp "#{ENV["HOME"]}/.ssh/id_rsa.pub", component.directory
         end,
