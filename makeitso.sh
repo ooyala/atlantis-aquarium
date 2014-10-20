@@ -8,7 +8,7 @@ function print() {
 print "==== Bringing vagrant up ===="
 vagrant up $aquarium
 vagrant ssh $aquarium -c 'sudo apt-get install ruby'
-vagrant ssh $aquarium -c 'sudo gem install docopt'
+vagrant ssh $aquarium -c 'sudo gem install docopt xhr-ifconfig'
 
 print "==== Provisioning ===="
 bin/atlantis-aquarium provision
