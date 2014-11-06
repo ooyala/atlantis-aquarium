@@ -2,7 +2,8 @@ FROM aquarium-base
 MAINTAINER appsplat-team@ooyala.com
 
 # We need a custom Java package
-RUN echo 'deb [arch=amd64] http://apt.sjc1-s.ooyala.com/oracle-java precise main' >> /etc/apt/sources.list.d/ooyala-oracle-java.list
+RUN echo 'deb [arch=amd64] http://ppa.launchpad.net/webupd8team/java/ubuntu precise main' >> /etc/apt/sources.list.d/oracle-java.list
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C2518248EEA14886
 
 # Set up docker-in-docker
 RUN echo deb http://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list
@@ -11,7 +12,8 @@ RUN apt-get update -qq
 RUN apt-get install -qqy --force-yes lxc-docker
 
 # Install java before addiing files for better caching
-RUN apt-get install oracle-java7 -y
+RUN echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+RUN apt-get install oracle-java7-installer -y
 
 ADD atlantis-builder.deb /tmp/atlantis-builder.deb
 RUN dpkg -i /tmp/atlantis-builder.deb || true
