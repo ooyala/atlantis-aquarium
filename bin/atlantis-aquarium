@@ -38,10 +38,11 @@ Usage:
   #$0 build-layers  [--base] [--builder]
 
 Options:
-  -C, --compile  Only compile; don't build image or deploy
-  -I, --image    Only compile and build Docker image; don't deploy
-  -i, --instance Which instance of the component to act on [default: all]
-  -h, --help     Show usage
+  -C, --compile   Only compile; don't build image or deploy
+  -n, --no-cache  Don't use docker cache when building
+  -I, --image     Only compile and build Docker image; don't deploy
+  -i, --instance  Which instance of the component to act on [default: all]
+  -h, --help      Show usage
 
 #{COMPONENTS_MESSAGE}
 USAGE
@@ -91,11 +92,11 @@ def compile(component)
   component.postcompile.call(executer)
 end
 
-def build_image(component)
+def build_image(component, options)
   executer = Executer.new
   executer.cd(component.directory)
   component.preimage.call(executer)
-  executer.run_in_vm!("docker build -t #{component.image_name} .")
+  executer.run_in_vm!("docker build --no-cache=#{options['--no-cache']} -t #{component.image_name} .")
   component.postimage.call(executer)
 end
 
@@ -280,7 +281,7 @@ if __FILE__ == $0
       component.set_status("compiling")
       compile(component)
       component.set_status("building")
-      build_image(component) unless options["--compile"] > 0
+      build_image(component, options) unless options["--compile"] > 0
       component.set_status("built")
       component.each_instance(options["--instance"]) do |instance|
         restart(instance) unless options["--compile"] > 0 || options["--image"] > 0
