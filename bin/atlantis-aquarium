@@ -38,11 +38,11 @@ Usage:
   #$0 build-layers  [--base] [--builder]
 
 Options:
-  -C, --compile   Only compile; don't build image or deploy
-  -n, --no-cache  Don't use docker cache when building
-  -I, --image     Only compile and build Docker image; don't deploy
-  -i, --instance  Which instance of the component to act on [default: all]
-  -h, --help      Show usage
+  -C, --compile          Only compile; don't build image or deploy
+  -n, --no-cache         Don't use docker cache when building
+  -I, --image            Only compile and build Docker image; don't deploy
+  -i, --instance=<inst>  Which instance of the component to act on [default: all]
+  -h, --help             Show usage
 
 #{COMPONENTS_MESSAGE}
 USAGE
