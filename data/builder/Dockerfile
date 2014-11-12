@@ -25,8 +25,8 @@ RUN runsvdir /etc/service & svpid=$! && apt-get install -f -y && kill $svpid
 #RUN apt-get install -f -y || true
 
 # And the dpkg hardcodes the real id_rsa.pub; copy in our local one.
-ADD builder_id_rsa.pub /opt/atlantis/builder/.ssh/id_rsa.pub
-ADD builder_id_rsa.pub /opt/atlantis/builder/layers/base/root/.ssh/authorized_keys
+ADD id_rsa.pub /opt/atlantis/builder/.ssh/id_rsa.pub
+ADD id_rsa.pub /opt/atlantis/builder/layers/base/root/.ssh/authorized_keys
 
 ADD ./start.sh /usr/local/bin/start.sh
 VOLUME /var/lib/docker
