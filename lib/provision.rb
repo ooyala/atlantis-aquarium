@@ -53,6 +53,8 @@ EOF})
       executer.run_in_vm!("sudo apt-get install -y squid")
       executer.run_in_vm!("sudo cp squid.conf /etc/squid3")
       executer.run_in_vm!("sudo service squid3 restart")
+      # We need to wait while squid starts up in the background
+      sleep 5
       # Start squid after the cache directory is mounted
       executer.run_in_vm!("sudo sed -i 's/start on runlevel.*/start on vagrant-mounted/' /etc/init/squid3.conf")
     end
@@ -64,7 +66,6 @@ EOF})
                          "sudo tee /etc/apt/apt.conf.d/99http-proxy > /dev/null")
       executer.run_in_vm!("echo 'Acquire::https::Proxy \"https://localhost:3128\";' | " +
                          "sudo tee --append /etc/apt/apt.conf.d/99http-proxy > /dev/null")
-      sleep 5
       executer.run_in_vm!("sudo apt-get update")
       executer.run_in_vm!("sudo apt-get install apt-transport-https")
       executer.run_in_vm!("sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9")
@@ -91,7 +92,6 @@ EOF})
       # Send docker through squid for caching
       executer.run_in_vm!(%q{sudo sed -i '$s#$#\nexport HTTP_PROXY="http://127.0.0.1:3128/"#' /etc/default/docker})
       # Use vagrant's DNS.
-      # TODO(edanaher): This IP shouldn't be hardcoded.
       executer.run_in_vm!(%Q{sudo sed -i '$s#$#\\nexport DOCKER_OPTS="--dns #{Util.docker_host_ip}"#' /etc/default/docker})
       executer.run_in_vm!("sudo service docker restart")
     end

@@ -3,7 +3,7 @@ domain   = "local"
 
 Vagrant.configure("2") do |config|
   config.vm.define "aquarium" do |aquarium|
-    aquarium.vm.box = ENV["ATLANTIS_VM_BOX"] || "ubuntu1204"
+    aquarium.vm.box = ENV["ATLANTIS_VM_BOX"] || "atlantis"
     aquarium.vm.box_url = "http://mirrors.ooyala.com/vagrant/ubuntu1204.box"
 
     aquarium.vm.hostname = [hostname,domain].join('.')
