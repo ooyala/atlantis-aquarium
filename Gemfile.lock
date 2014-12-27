@@ -2,9 +2,11 @@ GEM
   remote: http://rubygems.org/
   specs:
     docopt (0.5.0)
+    xhr-ifconfig (1.2.3)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   docopt
+  xhr-ifconfig

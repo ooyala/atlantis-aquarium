@@ -117,20 +117,20 @@ class Component
         directory: "base-container",
         image_name: "aquarium-base",
         preimage: lambda do |component|
-          FileUtils.cp "#{ENV["HOME"]}/.atlantis_secret/supervisor_master_id_rsa.pub",  component.directory
+          FileUtils.cp "#{ENV["HOME"]}/.ssh/id_rsa.pub",  component.directory
         end,
         postimage: lambda do |component|
-          FileUtils.rm "#{component.directory}/supervisor_master_id_rsa.pub"
+          FileUtils.rm "#{component.directory}/id_rsa.pub"
         end
       },
       "builder" => {
         debs: ["atlantis-builder", "atlantis-builderd"],
-        repo: "ooyala-builder",
+        repo: "atlantis-builder",
         preimage: lambda do |component|
-          FileUtils.cp "#{ENV["HOME"]}/.atlantis_secret/builder_id_rsa.pub", component.directory
+          FileUtils.cp "#{ENV["HOME"]}/.ssh/id_rsa.pub", component.directory
         end,
         postimage: lambda do |component|
-          FileUtils.rm "#{component.directory}/builder_id_rsa.pub"
+          FileUtils.rm "#{component.directory}/id_rsa.pub"
         end,
         docker_opts: ['-e REGISTRY=$(cat ../registry/ip) ',
                       '-e ATLANTIS_BUILDERD_OPT=--registry=$(cat ../registry/ip)',
