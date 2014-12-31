@@ -179,7 +179,7 @@ def build_layers(base, builder)
   if base
     mkbase = "/opt/atlantis/builder/bin/atlantis-mkbase"
     if !File.exists?("data/builder/images/tiny.tgz")
-      raise "Error: file data/builder/iamges/tiny.tgz does not exist.  Images cannot be built"
+      raise "Error: file data/builder/images/tiny.tgz does not exist.  Images cannot be built"
     end
     executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` http_proxy=http://172.17.42.1:3128 #{mkbase} -f /root/images/tiny.tgz"})
   end
