@@ -58,7 +58,7 @@ EOF})
       # Start squid after the cache directory is mounted
       executer.run_in_vm!("sudo sed -i 's/start on runlevel.*/start on vagrant-mounted/' /etc/init/squid3.conf")
     end
-    
+
     def configure_apt
       executer = Executer.new("data/setup")
       # send apt through squid for caching
@@ -66,7 +66,7 @@ EOF})
                          "sudo tee /etc/apt/apt.conf.d/99http-proxy > /dev/null")
       executer.run_in_vm!("echo 'Acquire::https::Proxy \"https://localhost:3128\";' | " +
                          "sudo tee --append /etc/apt/apt.conf.d/99http-proxy > /dev/null")
-      executer.run_in_vm!("sudo apt-get update")
+      executer.run_in_vm!("sudo apt-get update -qq")
       executer.run_in_vm!("sudo apt-get install apt-transport-https")
       executer.run_in_vm!("sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9")
       executer.run_in_vm!("sudo sh -c 'echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list'")
