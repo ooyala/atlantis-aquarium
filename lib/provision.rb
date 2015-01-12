@@ -75,13 +75,13 @@ EOF})
 
     def install_docker_lxc
       executer = Executer.new("data/setup")
-      executer.run_in_vm!("sudo apt-get install lxc-docker")
+      executer.run_in_vm!("sudo apt-get install -y lxc-docker")
     end
 
 
     def install_misc_packages
       executer = Executer.new("data/setup")
-      packages = %w{vim screen git lxc-docker libzookeeper-mt-dev zookeeper dnsmasq inotify-tools parallel}
+      packages = %w{vim screen git libzookeeper-mt-dev zookeeper dnsmasq inotify-tools parallel}
       executer.run_in_vm!("sudo apt-get install -y #{packages.join(" ")}")
       executer.run_in_vm!("sudo apt-get -y autoremove")
     end
