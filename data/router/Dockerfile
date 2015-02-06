@@ -1,7 +1,7 @@
 FROM aquarium-base
 MAINTAINER appsplat-team@ooyala.com
 
-RUN apt-get -y install libzookeeper-mt-dev
+RUN apt-get -y install libzookeeper-mt
 ADD atlantis-router.deb /tmp/atlantis-router.deb
 ADD server.internal.toml /etc/atlantis/router/server.internal.toml
 ADD server.external.toml /etc/atlantis/router/server.external.toml
