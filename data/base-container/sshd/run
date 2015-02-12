@@ -1,0 +1,4 @@
+#!/bin/bash
+
+mkdir -p /var/run/sshd
+exec /usr/sbin/sshd -De -p $SSHD_PORT 2>&1
