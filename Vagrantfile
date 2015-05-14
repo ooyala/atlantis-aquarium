@@ -1,10 +1,12 @@
+
 hostname = "atlantis-aquarium-vm"
 domain   = "local"
 
 Vagrant.configure("2") do |config|
   config.vm.define "aquarium" do |aquarium|
     aquarium.vm.box = ENV["ATLANTIS_VM_BOX"] || "atlantis"
-    aquarium.vm.box_url = "http://mirrors.ooyala.com/vagrant/ubuntu1204.box"
+    #aquarium.vm.box_url = "http://mirrors.ooyala.com/vagrant/ubuntu1404.box"
+    aquarium.vm.box_url = "https://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-amd64-vagrant-disk1.box"
 
     aquarium.vm.hostname = [hostname,domain].join('.')
     aquarium.vm.provider "virtualbox" do |v|

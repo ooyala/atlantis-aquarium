@@ -2,7 +2,7 @@ require_relative "executer"
 require "fileutils"
 require "openssl"
 
-require_relative './util'
+#require_relative './util'
 
 class Provision
   class <<self
@@ -26,6 +26,10 @@ class Provision
 
     def install_go
       executer = Executer.new("data/setup")
+
+      #sleep 5 second, waiting for dnsmasq to refresh 
+      executer.run_in_vm!("sleep 5")
+
       executer.run_in_vm!("wget -c http://go.googlecode.com/files/go1.2.1.linux-amd64.tar.gz")
       executer.run_in_vm!("sudo tar -C /usr/local -xzf go1.2.1.linux-amd64.tar.gz")
       executer.run_in_vm!("echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile")
@@ -51,7 +55,7 @@ EOF})
     def install_squid
       executer = Executer.new("data/setup")
       executer.run_in_vm!("sudo apt-get install -y squid")
-      executer.run_in_vm!("sudo cp squid.conf /etc/squid3")
+      #executer.run_in_vm!("sudo cp squid.conf /etc/squid3")
       executer.run_in_vm!("sudo service squid3 restart")
       # We need to wait while squid starts up in the background
       sleep 5
@@ -62,12 +66,13 @@ EOF})
     def configure_apt
       executer = Executer.new("data/setup")
       # send apt through squid for caching
+      executer.run_in_vm!("sudo touch /etc/apt/apt.conf.d/99http-proxy")
       executer.run_in_vm!("echo 'Acquire::http::Proxy \"http://localhost:3128\";' | " +
                          "sudo tee /etc/apt/apt.conf.d/99http-proxy > /dev/null")
       executer.run_in_vm!("echo 'Acquire::https::Proxy \"https://localhost:3128\";' | " +
                          "sudo tee --append /etc/apt/apt.conf.d/99http-proxy > /dev/null")
       executer.run_in_vm!("sudo apt-get update -qq")
-      executer.run_in_vm!("sudo apt-get install apt-transport-https")
+      executer.run_in_vm!("sudo apt-get install -y apt-transport-https")
       executer.run_in_vm!("sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9")
       executer.run_in_vm!("sudo sh -c 'echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list'")
       executer.run_in_vm!("sudo apt-get update -qq")
@@ -75,13 +80,14 @@ EOF})
 
     def install_docker_lxc
       executer = Executer.new("data/setup")
-      executer.run_in_vm!("sudo apt-get install -y lxc-docker")
+      executer.run_in_vm!("sudo apt-get install -y lxc-docker-1.5.0")
     end
 
 
     def install_misc_packages
       executer = Executer.new("data/setup")
-      packages = %w{vim screen git libzookeeper-mt-dev zookeeper dnsmasq inotify-tools parallel}
+      #packages = %w{vim screen git libzookeeper-mt-dev zookeeper dnsmasq inotify-tools apparmor}
+      packages = %w{vim screen git dnsmasq inotify-tools apparmor}
       executer.run_in_vm!("sudo apt-get install -y #{packages.join(" ")}")
       executer.run_in_vm!("sudo apt-get -y autoremove")
     end
@@ -90,15 +96,16 @@ EOF})
       executer = Executer.new("data/setup")
       executer.run_in_vm!("sudo usermod -a -G docker vagrant")
       # Send docker through squid for caching
-      executer.run_in_vm!(%q{sudo sed -i '$s#$#\nexport HTTP_PROXY="http://127.0.0.1:3128/"#' /etc/default/docker})
+      #executer.run_in_vm!(%q{sudo sed -i '$s#$#\nexport HTTP_PROXY="http://127.0.0.1:3128/"#' /etc/default/docker})
       # Use vagrant's DNS.
-      executer.run_in_vm!(%Q{sudo sed -i '$s#$#\\nexport DOCKER_OPTS="--dns #{Util.docker_host_ip}"#' /etc/default/docker})
+      #executer.run_in_vm!(%Q{sudo sed -i '$s#$#\nexport DOCKER_OPTS="--dns #{Util.docker_host_ip}"#' /etc/default/docker})
       executer.run_in_vm!("sudo service docker restart")
     end
 
     def configure_dnsmasq
       executer = Executer.new("data/setup")
       # Tell dnsmasq to use Aquarium Manager's hosts files as well.
+      #executer.run_in_vm!(%q{sudo service pdnsd stop})
       executer.run_in_vm!(%q{sudo sh -c "echo 'addn-hosts=/etc/aquarium/hosts-manager' > /etc/dnsmasq.d/aquarium-extra-hosts"})
       executer.run_in_vm!(%q{sudo sh -c "echo 'addn-hosts=/etc/aquarium/hosts-aquarium' >> /etc/dnsmasq.d/aquarium-extra-hosts"})
       executer.run_in_vm!("sudo service dnsmasq restart", :status => 129)
