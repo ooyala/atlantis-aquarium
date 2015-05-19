@@ -96,6 +96,11 @@ def build_image(component, options)
   executer = Executer.new
   executer.cd(component.directory)
   component.preimage.call(executer)
+
+  if File.exist?('data/registry/ip') && component.image_name == "aquarium-builder"
+     registryIp = File.read('data/registry/ip')
+     File.write("data/builder/start.sh.tmp",File.open("data/builder/start.sh",&:read).gsub("REGISTRY",registryIp.strip!))
+  end
   executer.run_in_vm!("docker build --no-cache=#{options['--no-cache']} -t #{component.image_name} .")
   component.postimage.call(executer)
 end
@@ -181,11 +186,13 @@ def build_layers(base, builder)
     if !File.exists?("data/builder/images/tiny.tgz")
       raise "Error: file data/builder/images/tiny.tgz does not exist.  Images cannot be built"
     end
-    executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` http_proxy=http://172.17.42.1:3128 #{mkbase} -f /root/images/tiny.tgz"})
+    #executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` http_proxy=http://172.17.42.1:3128 #{mkbase} -f /root/images/tiny.tgz"})
+    executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` #{mkbase} -f images/tiny.tgz"})
   end
   if builder
     builder = "/opt/atlantis/builder/bin/atlantis-builder"
-    executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` http_proxy=http://172.17.42.1:3128 #{builder} -boot"})
+    #executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` http_proxy=http://172.17.42.1:3128 #{builder} -boot"})
+    executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` #{builder} -boot"})
   end
 end
 

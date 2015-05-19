@@ -11,7 +11,8 @@ RUN apt-get install -y apparmor
 RUN echo deb http://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
 RUN apt-get update -qq
-RUN apt-get install -qqy --force-yes lxc-docker
+RUN apt-get install -qqy --force-yes lxc-docker-1.5.0
+
 
 # Install java before addiing files for better caching
 RUN echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
@@ -30,6 +31,7 @@ RUN runsvdir /etc/service & svpid=$! && apt-get install -f -y && kill $svpid
 ADD id_rsa.pub /opt/atlantis/builder/.ssh/id_rsa.pub
 ADD id_rsa.pub /opt/atlantis/builder/layers/base/root/.ssh/authorized_keys
 
-ADD ./start.sh /usr/local/bin/start.sh
+ADD ./start.sh.tmp /usr/local/bin/start.sh
+
 VOLUME /var/lib/docker
 CMD ["bash", "/usr/local/bin/start.sh"]

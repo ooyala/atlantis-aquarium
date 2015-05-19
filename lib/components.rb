@@ -166,8 +166,17 @@ class Component
         end,
         docker_opts: "-v /etc/aquarium:/host/etc/aquarium -p 443:443"
       },
-      "registry" => {debs: ["go-docker-registry"],
-                     repo: "go-docker-registry"},
+      "registry" => {
+        debs: ["go-docker-registry"],
+        repo: "go-docker-registry", 
+	preimage: lambda do |component|
+          FileUtils.cp "#{ENV["HOME"]}/.ssh/id_rsa.pub", component.directory
+        end,
+        postimage: lambda do |component|
+          FileUtils.rm "#{component.directory}/id_rsa.pub"
+        end
+       },	
+
       "router" => {
         debs: ["atlantis-router"],
         repo: "atlantis-router",
