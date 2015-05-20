@@ -19,4 +19,8 @@ RUN cd /usr/bin; for x in $(find /usr/local/go/bin -type f); do ln -s $x; done;
 ADD id_rsa.pub /root/.ssh/authorized_keys.d/master.pub
 ADD id_rsa.pub /root/.ssh/authorized_keys
 
+#docker issue #5529, enable ssh to container
+RUN sed -ri 's/^session\s+required\s+pam_loginuid.so$/session optional pam_loginuid.so/' /etc/pam.d/sshd
+
+
 CMD ["runsvdir", "/etc/service"]
