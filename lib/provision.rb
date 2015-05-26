@@ -86,8 +86,7 @@ EOF})
 
     def install_misc_packages
       executer = Executer.new("data/setup")
-      #packages = %w{vim screen git libzookeeper-mt-dev zookeeper dnsmasq inotify-tools apparmor}
-      packages = %w{vim screen git dnsmasq inotify-tools apparmor}
+      packages = %w{vim screen git libzookeeper-mt-dev zookeeper dnsmasq inotify-tools apparmor}
       executer.run_in_vm!("sudo apt-get install -y #{packages.join(" ")}")
       executer.run_in_vm!("sudo apt-get -y autoremove")
     end
