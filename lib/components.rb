@@ -128,7 +128,13 @@ class Component
         repo: "atlantis-builder",
         preimage: lambda do |component|
           FileUtils.cp "#{ENV["HOME"]}/.ssh/id_rsa.pub", component.directory
+          status = Status.read
+          params = {
+            :registry_host => "#{status["registry"]["ip"]}"
+          }
+          template("#{component.directory}/server.toml", params)
         end,
+
         postimage: lambda do |component|
           FileUtils.rm "#{component.directory}/id_rsa.pub"
         end,
@@ -208,9 +214,9 @@ class Component
         end,
         docker_opts: "--privileged",
         instances: {
-          "1" => {},
-          "2" => {},
-          "3" => {}
+          "1" => {}
+          #"2" => {},
+          #"3" => {}
         }
       },
       "zookeeper" => {},

@@ -19,6 +19,8 @@ RUN apt-get install -qqy --force-yes lxc-docker-1.5.0
 RUN echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
 RUN apt-get install oracle-java7-installer -y
 
+
+ADD server.toml /etc/atlantis/builder/server.toml
 ADD atlantis-builder.deb /tmp/atlantis-builder.deb
 RUN dpkg -i /tmp/atlantis-builder.deb || true
 ADD atlantis-builderd.deb /tmp/atlantis-builderd.deb
