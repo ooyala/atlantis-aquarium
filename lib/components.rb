@@ -133,6 +133,7 @@ class Component
             :registry_host => "#{status["registry"]["ip"]}"
           }
           template("#{component.directory}/server.toml", params)
+          template("#{component.directory}/start.sh", params)
         end,
 
         postimage: lambda do |component|

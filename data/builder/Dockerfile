@@ -1,3 +1,4 @@
+
 FROM aquarium-base
 MAINTAINER appsplat-team@ooyala.com
 
@@ -34,7 +35,7 @@ RUN runsvdir /etc/service & svpid=$! && apt-get install -f -y && kill $svpid
 ADD id_rsa.pub /opt/atlantis/builder/.ssh/id_rsa.pub
 ADD id_rsa.pub /opt/atlantis/builder/layers/base/root/.ssh/authorized_keys
 
-ADD ./start.sh.tmp /usr/local/bin/start.sh
+ADD ./start.sh /usr/local/bin/start.sh
 
 VOLUME /var/lib/docker
 CMD ["bash", "/usr/local/bin/start.sh"]
