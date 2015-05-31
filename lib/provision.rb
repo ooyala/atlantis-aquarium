@@ -55,7 +55,7 @@ EOF})
     def install_squid
       executer = Executer.new("data/setup")
       executer.run_in_vm!("sudo apt-get install -y squid")
-      #executer.run_in_vm!("sudo cp squid.conf /etc/squid3")
+      executer.run_in_vm!("sudo cp squid.conf /etc/squid3")
       executer.run_in_vm!("sudo service squid3 restart")
       # We need to wait while squid starts up in the background
       sleep 5
@@ -95,9 +95,9 @@ EOF})
       executer = Executer.new("data/setup")
       executer.run_in_vm!("sudo usermod -a -G docker vagrant")
       # Send docker through squid for caching
-      #executer.run_in_vm!(%q{sudo sed -i '$s#$#\nexport HTTP_PROXY="http://127.0.0.1:3128/"#' /etc/default/docker})
+      executer.run_in_vm!(%q{sudo sed -i '$s#$#\nexport HTTP_PROXY="http://127.0.0.1:3128/"#' /etc/default/docker})
       # Use vagrant's DNS.
-      #executer.run_in_vm!(%Q{sudo sed -i '$s#$#\nexport DOCKER_OPTS="--dns #{Util.docker_host_ip}"#' /etc/default/docker})
+      executer.run_in_vm!(%q{sudo sed -i '$a\export DOCKER_OPTS="--dns 172.17.42.1"' /etc/default/docker})
       executer.run_in_vm!("sudo service docker restart")
     end
 
