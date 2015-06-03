@@ -22,6 +22,7 @@ class Provision
       configure_docker
       configure_dnsmasq
       configure_parallel
+      configure_zookeeper
     end
 
     def install_go
@@ -115,6 +116,15 @@ EOF})
       # Ubuntu configure this wrong by default.
       executer.run_in_vm!("sudo rm -f /etc/parallel/config")
     end
+    
+    def configure_zookeeper
+      executer = Executer.new("data/setup")
+      # change owner of zookeeper log folder so that running zk client in VM won't 
+      # show annoying (though harmless) errors
+      executer.run_in_vm!("sudo chown vagrant:vagrant /var/log/zookeeper")
+    end
+
+
 
     def go_byte_array(bytes)
       bytes = bytes.map { |b|"0x#{b.to_s(16).upcase}" }

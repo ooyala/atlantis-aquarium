@@ -87,7 +87,7 @@ def compile(component)
   executer.run_in_vm!("rm -f *.deb")
   executer.run_in_vm!("make -C #{component.repo}/ clean deb")
   component.debs.each do |deb|
-    executer.run_in_vm!("cp #{component.repo}/#{deb}_*.deb #{deb}.deb")
+    executer.run_in_vm!("if [ -f #{component.repo}/#{deb}_*.deb ]; then cp #{component.repo}/#{deb}_*.deb #{deb}.deb; else cp #{component.repo}/pkg/#{deb}_*.deb #{deb}.deb; fi ")
   end
   component.postcompile.call(executer)
 end
@@ -96,11 +96,6 @@ def build_image(component, options)
   executer = Executer.new
   executer.cd(component.directory)
   component.preimage.call(executer)
-
-  if File.exist?('data/registry/ip') && component.image_name == "aquarium-builder"
-     registryIp = File.read('data/registry/ip')
-     File.write("data/builder/start.sh.tmp",File.open("data/builder/start.sh",&:read).gsub("REGISTRY",registryIp.strip!))
-  end
   executer.run_in_vm!("docker build --no-cache=#{options['--no-cache']} -t #{component.image_name} .")
   component.postimage.call(executer)
 end
@@ -201,14 +196,15 @@ def register_components
   manager = "atlantis-manager -R dev"
 
   # TODO(edanaher): This shouldn't be necessary.
+  executer.run_in_vm!(%q{echo 'create /atlantis ""' | /usr/share/zookeeper/bin/zkCli.sh -server $(cat zookeeper/ip)})
   executer.run_in_vm!(%q{echo 'create /atlantis/ip_groups ""' | /usr/share/zookeeper/bin/zkCli.sh -server $(cat zookeeper/ip)})
   executer.run_in_vm!(%q{echo 'create /atlantis/ip_groups/dev ""' | /usr/share/zookeeper/bin/zkCli.sh -server $(cat zookeeper/ip)})
 
   # Set credentials and create environment
-  executer.run_in_vm!("echo vagrant | #{manager} create-env -n test")
+  executer.run_in_vm!("#{manager} create-env -n test")
 
   # Register supervisors
-  (1..3).each do |s|
+  (1..1).each do |s|
     executer.run_in_vm!("#{manager} register-supervisor -H $(cat supervisor/ip-#{s})")
   end
 
@@ -226,10 +222,12 @@ def start_apps
   executer = Executer.new("data")
   manager = "atlantis-manager -R dev"
   repo_root = "file:///root/repos"
-  apps = {"hello-go" => ["10ba55264d25b67ba34a848fcca4699ebb66bf41", true, nil],
-          "hello-ruby" => ["bd4625f0d77d08846b0a10ad07b6a2756b559b26", true, nil],
-          "hello-proxy-go" => ["bccae2fa5a9765ccb00ef399f006b7b00b274a3f", false, nil],
-          "log_hog" => ["ee5a3adbc33b9009ad960d0a8e3092012c2fce91", true, "test_apps"]}
+  apps = {"hello-atlantis" => ["e96da89e3e7f592662227dbe6213878a5f7ee4ce", true, nil]}
+  
+  #apps = {"hello-go" => ["10ba55264d25b67ba34a848fcca4699ebb66bf41", true, nil]}
+          #"hello-ruby" => ["bd4625f0d77d08846b0a10ad07b6a2756b559b26", true, nil],
+          #"hello-proxy-go" => ["bccae2fa5a9765ccb00ef399f006b7b00b274a3f", false, nil],
+          #"log_hog" => ["ee5a3adbc33b9009ad960d0a8e3092012c2fce91", true, "test_apps"]}
 
   # Register apps
   apps.each do |app, config|
@@ -242,9 +240,9 @@ def start_apps
 
   # Configure hello-proxy-go dependency on hello-go
   # TODO(edanaher): Read from stdin.
-  executer.run_in_vm!(%Q{echo '{"name": "test"}' > data})
-  executer.run_in_vm!("#{manager} add-depender-env-data-for-depender-app -a hello-go -r hello-proxy-go -f data")
-  executer.run_in_vm!("rm data")
+  #executer.run_in_vm!(%Q{echo '{"name": "test"}' > data})
+  #executer.run_in_vm!("#{manager} add-depender-env-data-for-depender-app -a hello-go -r hello-proxy-go -f data")
+  #executer.run_in_vm!("rm data")
 
   #deploy apps
   c = 5

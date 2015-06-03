@@ -149,7 +149,7 @@ class Component
         debs: ["atlantis-manager"],
         repo: "atlantis-manager",
         postcompile: lambda do |component|
-           system("sudo cp #{component.repo}/bin/atlantis-manager /usr/local/bin")
+           system("sudo cp #{component.repo}/example/client /usr/local/bin/atlantis-manager")
            system("sudo cp #{component.repo}/lib/atlantis/bin/atlantis /usr/local/bin")
         end,
         preimage: lambda do |component|
