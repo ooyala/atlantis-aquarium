@@ -222,7 +222,7 @@ def start_apps
   executer = Executer.new("data")
   manager = "atlantis-manager -R dev"
   repo_root = "file:///root/repos"
-  apps = {"hello-atlantis" => ["e96da89e3e7f592662227dbe6213878a5f7ee4ce", true, nil]}
+  apps = {"hello-go" => ["7e68893ed1c097d736108f91c40b2673984c7d2f", true, nil]}
   
   #apps = {"hello-go" => ["10ba55264d25b67ba34a848fcca4699ebb66bf41", true, nil]}
           #"hello-ruby" => ["bd4625f0d77d08846b0a10ad07b6a2756b559b26", true, nil],
@@ -238,11 +238,16 @@ def start_apps
     executer.run_in_vm!("#{manager} register-app -a #{app} #{i} -g #{repo_root}/#{repo} -r #{root} -e me@example.com")
   end
 
-  # Configure hello-proxy-go dependency on hello-go
+  //register cmk, it is a dependency of hello-go
+  executer.run_in_vm!("#{manager} register-app -a cmk -i -g #{repo_root}/cmk -r /cmk -e me@example.com")
+
+  # Configure hello-go dependency on cmk
   # TODO(edanaher): Read from stdin.
   #executer.run_in_vm!(%Q{echo '{"name": "test"}' > data})
   #executer.run_in_vm!("#{manager} add-depender-env-data-for-depender-app -a hello-go -r hello-proxy-go -f data")
-  #executer.run_in_vm!("rm data")
+  executer.run_in_vm!(%Q{echo '{"Name": "test", "DataMap": {"contact_group": "atlantis_apps"}}' > data})
+  executer.run_in_vm!("#{manager} add-depender-env-data-for-depender-app -a cmk -r hello-go -f data")
+  executer.run_in_vm!("rm data")
 
   #deploy apps
   c = 5
