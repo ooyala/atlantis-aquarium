@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+
+##
+#
+# This script is used to clone and init all the git repositories atlantis-aqurium
+# needs in order to run "atlantis-aquarium build"
+# 
+# All repos will be placed under $HOME/repos folder 
+#
+##
+
+def clone_repos
+
+      repos_home = File.expand_path('~') + "/repos"
+
+      #list of git repos aquarium need to be cloned before can run
+      repos = {
+        "go-docker-registry"  => "git@github.com:ooyala/go-docker-registry.git",
+        "atlantis-manager"    => "git@github.com:ooyala/atlantis-manager.git",
+	"atlantis-builder"    => "git@github.com:ooyala/atlantis-builder.git",
+        "atlantis-router"     => "git@github.com:ooyala/atlantis-router.git",
+        "atlantis-supervisor" => "git@github.com:ooyala/atlantis-supervisor.git",
+        "hello-go"            => "ssh://git@git.corp.ooyala.com/hello-go"
+      }
+
+
+      repos.each do |repo_name, repo_url|
+
+        #git clone and init submodules
+        path = "#{repos_home}/#{repo_name}"
+        unless File.directory?(path)
+	  system("git clone #{repo_url} #{path}")
+	  system("cd #{path}; git submodule update --init")
+        else 
+          puts "#{path} already exists. skip git clone for this folder"	
+        end
+      end
+end
+
+clone_repos
