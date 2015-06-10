@@ -123,6 +123,12 @@ def start(component)
     File.write("#{component.directory}/#{ipfile}", ip)
     component.set_value("cid", cid.chomp)
     component.set_value("ip", ip.chomp)
+    if ["zookeeper", "registry", "builder"].include?(component.name)
+      component_cname = component.name + ".aquarium"
+      host_file = "/etc/aquarium/hosts-manager"
+      new_entry = ip.strip + ' ' + component_cname
+      executer.run_in_vm!("sudo sh -c \"grep -q #{component_cname} #{host_file} && sed -i \'s;.*#{component_cname}.*;#{new_entry};\' #{host_file} || echo \'#{new_entry}\' >> #{host_file}\"")
+    end
   end
   component.poststart.call(executer)
   component.set_status("running")
@@ -182,12 +188,12 @@ def build_layers(base, builder)
       raise "Error: file data/builder/images/tiny.tgz does not exist.  Images cannot be built"
     end
     #executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` http_proxy=http://172.17.42.1:3128 #{mkbase} -f /root/images/tiny.tgz"})
-    executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` #{mkbase} -f images/tiny.tgz"})
+    executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=registry.aquarium #{mkbase} -f images/tiny.tgz"})
   end
   if builder
     builder = "/opt/atlantis/builder/bin/atlantis-builder"
     #executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` http_proxy=http://172.17.42.1:3128 #{builder} -boot"})
-    executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` #{builder} -boot"})
+    executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=registry.aquarium #{builder} -boot"})
   end
 end
 
@@ -238,7 +244,7 @@ def start_apps
     executer.run_in_vm!("#{manager} register-app -a #{app} #{i} -g #{repo_root}/#{repo} -r #{root} -e me@example.com")
   end
 
-  //register cmk, it is a dependency of hello-go
+  #register cmk, it is a dependency of hello-go
   executer.run_in_vm!("#{manager} register-app -a cmk -i -g #{repo_root}/cmk -r /cmk -e me@example.com")
 
   # Configure hello-go dependency on cmk

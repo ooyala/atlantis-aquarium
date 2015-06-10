@@ -109,6 +109,10 @@ EOF})
       executer.run_in_vm!(%q{sudo sh -c "echo 'addn-hosts=/etc/aquarium/hosts-manager' > /etc/dnsmasq.d/aquarium-extra-hosts"})
       executer.run_in_vm!(%q{sudo sh -c "echo 'addn-hosts=/etc/aquarium/hosts-aquarium' >> /etc/dnsmasq.d/aquarium-extra-hosts"})
       executer.run_in_vm!("sudo service dnsmasq restart", :status => 129)
+      executer.run_in_vm!("sudo mkdir -p /etc/aquarium")
+      executer.run_in_vm!("sudo touch /etc/aquarium/hosts-manager")
+      executer.run_in_vm!("killall watch-hosts.sh || true")
+      executer.run_in_vm!("nohup ./watch-hosts.sh > /dev/null & sleep 2")
     end
 
     def configure_parallel
