@@ -3,11 +3,39 @@ atlantis-aquarium
 
 Atlantis in a Vagrant VM!  Excellent for testing.
 
+# Requirements
+* git
+* ruby 1.9.1 or later
+* vagrant 1.7.2 or later
+
+# Installation
+
+First, create **$HOME/repos** folder and clone atlantis-aquarium repo under this folder; you will find a clone-repos 
+script under **$HOME/repos/atlantis-aquarium/bin**; run the script will clone several atlantis coomponents repos that 
+aquarium needs into **$HOME/repos**
+
+
+```
+$cd $HOME/repos/atlantis-aquairum
+$./bin/clone-repos
+
+....
+
+$ls -l $HOME/repos
+atlantis-aquarium	atlantis-manager	atlantis-supervisor	hello-go
+atlantis-builder	atlantis-router		go-docker-registry	
+
+```
+
+# How it works
+
 Control is primarily through the controller, bin/atlantis-aquarium (which should probably become a gem or
 other easily-installable package at some point).  Initial bootstrap can also be done via the makeitso script,
 until its functionality is fully subsumed in an elegant way into the main script.
 
 ```
+$bin/atlantis-aquarium
+
 Usage:
   atlantis-aquarium build   [<component>...] [options] [-C | --compile] [-I | --image]
   atlantis-aquarium start   [<component>...] [options]
@@ -28,19 +56,60 @@ Options:
   -h, --help     Show usage
 ```
 
-### Common options
+## provision
 
-The most common options take components - one of base-aquarium-image, builder, manager, registry, router,
-supervisor, and zookeeper (or "all", which is also the default when component is optional).  All but
-base-aquarium-image are services run in docker containers; base-aquarium-image is a special target to build
-the base image that other components run inside.
+First thing to do is to run provision; this will spin up vagrant VM called *aquarium* and install go, setup docker, etc.  
+Should be done with a fresh VM.
+```
+$bin/atlantis-aquarium provision
 
-These options can also take an instance in the case of supervisor or router; valid supervisor instances are 1,
-2, and 3, and valid router instances are internal and external.
+.............
 
-- build: Compile, build the container, and (re)start the given component.  With -C, only compiles, and with
-  -I, compiles and builds container but doesn't restart.  If an instance is given, only that instance will be
-  restarted.  
+$vagrant status
+Current machine states:
+
+aquarium                  running (virtualbox)
+
+The VM is running. To stop this VM, you can run `vagrant halt` to
+shut it down forcefully, or you can run `vagrant suspend` to simply
+suspend the virtual machine. In either case, to restart it again,
+simply run `vagrant up`.
+```
+
+## build and start atlantis components
+Aquarium require following components. All but base-aquarium-image are services run in docker containers; 
+base-aquarium-image is a special target to build the base image that other components run inside.    
+
+* **base-aquarium-imagec**; base docker image for every other components in this list 
+* **zookeeper**; a single node zookeeper
+* **registry**; https://github.com/ooyala/go-docker-registry 
+* **builder**; https://github.com/ooyala/atlantis-builder
+* **manager**; https://github.com/ooyala/atlantis-manager
+* **router-internal**; https://github.com/ooyala/atlantis-router
+* **router-external**; https://github.com/ooyala/atlantis-router
+* **supervisor**; https://github.com/ooyala/atlantis-supervisor
+
+*build* subcommand compile, build the container, and (re)start the given component. *build* take following options
+
+```
+ -C, compiles only; If an instance is given, only that instance will be compiled
+ -I, compiles and builds container but doesn't restart.  If an instance is given, only that instance will be build.
+```
+
+to build and (re)start all the components;
+
+```
+$bin/atlantis-aquarium build
+```
+
+or, to build and (re)start a single component
+
+```
+$bin/atlantis-aquarium build <component-name>
+```
+
+## interact with the components
+Once the components built, you can start/stop/restart or obtain ssh shell into the container 
 
 - start: Ensure that the component is running.  If it is already running, it won't be restarted.
 
@@ -54,25 +123,46 @@ These options can also take an instance in the case of supervisor or router; val
   router, each instance will be ssh'd into in turn.  If no component is given, ssh into the Vagrant VM
   instead.
 
-### Convenience wrapper for atlantis command
+```
+$bin/atlantis-aquairum start|stop|restart|ssh <component-name>
+``` 
+## build-layers
+*build-layers* subcommand builds layers required for deploying.  Only needed for the simple builder, as aquarium used. it support following options:
+ 
+* *--base* builds only the base image; 
+* *--builder* builds only the language-specific layers (e.g., ruby1.9.3, go1.2).  Should be done when layers are modifed or the builder is restarted.
 
-The atlantis subcommand will pass remaining arguments to the atlantis command run within the VM; this is
-a convenience, e.g., for `atlantis ssh \[container\]`
+```
+$bin/atlantis-aquairum build-layers [--base] [--builder]
+``` 
 
-### Setup options
+## Register-components 
+*register-components* registers the supervisors, routers, etc. with the manager.  Should be done once after all components are started, or after zookeeper is restarted.
 
-The remaining options are useful primarily for setting up the system:
+```
+$bin/atlantis-aquairum register-components
+```
 
-- provision: provision the container: install go, setup docker, etc.  Should be done with a fresh VM.
+**Note:** you may be promoted to input LDAP username and/or password, just type enter to continue
 
-- register-components: Register the supervisors, routers, etc. with the manager.  Should be done once after
-  all components are started, or after zookeeper is restarted.
+## Hello-world app
+*base-cluster* set up sample hello-go app and deploy it.  It is useful as a test to ensure everything is working in aquarium. Should be done after all steps has been taken;
 
-- base-cluster: Set up some sample hello-* apps and deploy them.  Useful as a test to ensure everything is
-  working.
+```
+$bin/atlantis-aquairum register-components
+```
+ 
+## Convenience wrapper for atlantis-manager CLI
+*atlantis* subcommand will pass remaining arguments to the atlantis-manager cli run within the VM; this is
+a convenience, e.g.
+```
+$bin/atlantis-aquarium atlantis list-env
+```
 
-- build-layers [--base] [--builder]: Build the layers required for deploying.  Only needed for the simple
-  builder.  --base builds only the base image; --builder builds only the language-specific layers (e.g.,
-  ruby1.9.3, go1.2).  Should be done when layers are modifed or the builder is restarted.
+## Clean up
+*nuke.sh*, as the name suggested, tear down everything!
 
-- nuke-system: Tear down everything!  Currently unimplemented.
+```
+$./nuke.sh
+```
+
