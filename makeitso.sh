@@ -5,6 +5,10 @@ set -ex
 function print() {
 	echo [33m"$@"[0m
 }
+
+print "==== git clone atlantis components ===="
+bin/clone-repos
+
 print "==== Bringing vagrant up ===="
 vagrant up $aquarium
 vagrant ssh $aquarium -c 'bin/ruby-upgrade.sh'
@@ -14,13 +18,13 @@ print "==== Provisioning ===="
 bin/atlantis-aquarium provision
 
 print "==== Building and starting services ===="
-#bin/atlantis-aquarium build all
+bin/atlantis-aquarium build all
 
 print "==== Building base layers ===="
-#bin/atlantis-aquarium build-layers
+bin/atlantis-aquarium build-layers
 
 print "==== Registering components ===="
-#bin/atlantis-aquarium register-components
+bin/atlantis-aquarium register-components
 
 print "==== Spinning up sample apps ===="
-#bin/atlantis-aquarium base-cluster
+bin/atlantis-aquarium base-cluster

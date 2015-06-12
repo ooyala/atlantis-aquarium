@@ -10,7 +10,7 @@ Atlantis in a Vagrant VM!  Excellent for testing.
 
 # Installation
 
-First, create **$HOME/repos** folder and clone atlantis-aquarium repo under this folder; you will find a clone-repos 
+First, create **$HOME/repos** folder and clone atlantis-aquarium repo under this folder; you will find a **clone-repos** 
 script under **$HOME/repos/atlantis-aquarium/bin**; run the script will clone several atlantis coomponents repos that 
 aquarium needs into **$HOME/repos**
 
@@ -21,17 +21,18 @@ $./bin/clone-repos
 
 ....
 
-$ls -l $HOME/repos
+$ls $HOME/repos
 atlantis-aquarium	atlantis-manager	atlantis-supervisor	hello-go
 atlantis-builder	atlantis-router		go-docker-registry	
 
 ```
 
-# How it works
+# Bootstrap
 
 Control is primarily through the controller, bin/atlantis-aquarium (which should probably become a gem or
-other easily-installable package at some point).  Initial bootstrap can also be done via the makeitso script,
-until its functionality is fully subsumed in an elegant way into the main script.
+other easily-installable package at some point).  
+
+Initial bootstrap can also be done using the **makeitso.sh** script.
 
 ```
 $bin/atlantis-aquarium
