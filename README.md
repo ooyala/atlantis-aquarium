@@ -8,28 +8,8 @@ Atlantis in a Vagrant VM!  Excellent for testing.
 * ruby 1.9.1 or later
 * vagrant 1.7.2 or later
 
-# Installation
-
-First, create **$HOME/repos** folder and clone atlantis-aquarium repo under this folder; you will find a **clone-repos** 
-script under **$HOME/repos/atlantis-aquarium/bin**; run the script will clone several atlantis coomponents repos that 
-aquarium needs into **$HOME/repos**
-
-
-```
-$cd $HOME/repos/atlantis-aquairum
-$./bin/clone-repos
-
-....
-
-$ls $HOME/repos
-atlantis-aquarium	atlantis-manager	atlantis-supervisor	hello-go
-atlantis-builder	atlantis-router		go-docker-registry	
-
-```
-
 # Bootstrap
-
-Control is primarily through the controller, bin/atlantis-aquarium (which should probably become a gem or
+Control is primarily through the controller, **bin/atlantis-aquarium** (which should probably become a gem or
 other easily-installable package at some point).  
 
 Initial bootstrap can also be done using the **makeitso.sh** script.
@@ -57,6 +37,23 @@ Options:
   -h, --help     Show usage
 ```
 
+## clone repos
+First, create **$HOME/repos** folder and clone atlantis-aquarium repo under this folder. 
+Then find **$HOME/repos/atlantis-aquarium/bin/clone-repos** script and run the script will clone several atlantis coomponents repos that 
+aquarium needs into **$HOME/repos** folder
+
+```
+$cd $HOME/repos/atlantis-aquairum
+$./bin/clone-repos
+
+....
+
+$ls $HOME/repos
+atlantis-aquarium	atlantis-manager	atlantis-supervisor	hello-go
+atlantis-builder	atlantis-router		go-docker-registry	
+
+```
+
 ## provision
 
 First thing to do is to run provision; this will spin up vagrant VM called *aquarium* and install go, setup docker, etc.  
@@ -78,7 +75,7 @@ simply run `vagrant up`.
 ```
 
 ## build and start atlantis components
-Aquarium require following components. All but base-aquarium-image are services run in docker containers; 
+Aquarium require following components. All but base-aquarium-image are services run in docker containers within the VM we just created; 
 base-aquarium-image is a special target to build the base image that other components run inside.    
 
 * **base-aquarium-imagec**; base docker image for every other components in this list 
@@ -137,7 +134,7 @@ $bin/atlantis-aquairum start|stop|restart|ssh <component-name>
 $bin/atlantis-aquairum build-layers [--base] [--builder]
 ``` 
 
-## Register-components 
+## register-components 
 *register-components* registers the supervisors, routers, etc. with the manager.  Should be done once after all components are started, or after zookeeper is restarted.
 
 ```
@@ -146,11 +143,11 @@ $bin/atlantis-aquairum register-components
 
 **Note:** you may be promoted to input LDAP username and/or password, just type enter to continue
 
-## Hello-world app
+## hello-world app
 *base-cluster* set up sample hello-go app and deploy it.  It is useful as a test to ensure everything is working in aquarium. Should be done after all steps has been taken;
 
 ```
-$bin/atlantis-aquairum register-components
+$bin/atlantis-aquairum base-culster
 ```
  
 ## Convenience wrapper for atlantis-manager CLI
@@ -166,4 +163,13 @@ $bin/atlantis-aquarium atlantis list-env
 ```
 $./nuke.sh
 ```
+
+#Known issues
+While running *build* subcommand, sometimes it fails with error message like this
+```
+INFO[0024] Error getting container 2328b2d6de9727c41ad1dcf1f977057a1cedb15e65c466a01482c09576236618 from driver devicemapper: open /dev/mapper/docker-8:1-403558-2328b2d6de9727c41ad1dcf1f977057a1cedb15e65c466a01482c09576236618: no such file or directory 
+```
+This is caused by well known docker issue (https://github.com/docker/docker/issues/4036) where docker having a race condition in storage backend. Re-run the build normally will pass.  
+
+
 

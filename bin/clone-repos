@@ -20,7 +20,7 @@ def clone_repos
 	"atlantis-builder"    => "git@github.com:ooyala/atlantis-builder.git",
         "atlantis-router"     => "git@github.com:ooyala/atlantis-router.git",
         "atlantis-supervisor" => "git@github.com:ooyala/atlantis-supervisor.git",
-        "hello-go"            => "ssh://git@git.corp.ooyala.com/hello-go"
+        "hello-atlantis"      => "git@github.com:ooyala/hello-atlantis.git"
       }
 
 
@@ -35,6 +35,19 @@ def clone_repos
           puts "#{path} already exists. skip git clone for this folder"	
         end
       end
+
+      #create hello-atlantis/hello/go1.2 and check in a new branch
+      #so that "base-cluster" can build the hello-go1.2 app
+
+      hello_path = "#{repos_home}/hello-atlantis/hello"
+      go_path = "#{hello_path}/go1.2"
+
+      unless File.directory?(go_path)
+        system("cd #{hello_path} && ./_copy")
+        system("cd #{hello_path} && git checkout -b aquarium-test")
+        system("cd #{hello_path} && git add #{go_path} && git commit -a -m 'aquarium add hello-go1.2'")
+      end
+
 end
 
 clone_repos

@@ -228,31 +228,32 @@ def start_apps
   executer = Executer.new("data")
   manager = "atlantis-manager -R dev"
   repo_root = "file:///root/repos"
-  apps = {"hello-go" => ["7e68893ed1c097d736108f91c40b2673984c7d2f", true, nil]}
-  
+
+  #find SHA of git HEAD and use it to deploy
+  sha = `cd ~/repos/hello-atlantis/ && git rev-parse HEAD`
+  puts "using hello-go commit " + sha
+  apps = {"hello-go1.2" => [sha.chomp, true, "hello-atlantis"]}
+
   #apps = {"hello-go" => ["10ba55264d25b67ba34a848fcca4699ebb66bf41", true, nil]}
           #"hello-ruby" => ["bd4625f0d77d08846b0a10ad07b6a2756b559b26", true, nil],
           #"hello-proxy-go" => ["bccae2fa5a9765ccb00ef399f006b7b00b274a3f", false, nil],
           #"log_hog" => ["ee5a3adbc33b9009ad960d0a8e3092012c2fce91", true, "test_apps"]}
 
   # Register apps
-  apps.each do |app, config|
-    sha, internal, parent = config
-    i = internal ? "-i" : ""
-    repo = parent || app
-    root = parent ? "/#{app}" : "/"
-    executer.run_in_vm!("#{manager} register-app -a #{app} #{i} -g #{repo_root}/#{repo} -r #{root} -e me@example.com")
-  end
-
-  #register cmk, it is a dependency of hello-go
-  executer.run_in_vm!("#{manager} register-app -a cmk -i -g #{repo_root}/cmk -r /cmk -e me@example.com")
+  executer.run_in_vm!("#{manager} register-app -a hello-go1.2 -i -r hello/go1.2 -g #{repo_root}/hello-atlantis -e me@example.com")
+  
+  #apps.each do |app, config|
+  #  sha, internal, parent = config
+  #  i = internal ? "-i" : ""
+  #  repo = parent || app
+  #  root = parent ? "/#{app}" : "/"
+  #  executer.run_in_vm!("#{manager} register-app -a #{app} #{i} -g #{repo_root}/#{repo} -r #{root} -e me@example.com")
+  #end
 
   # Configure hello-go dependency on cmk
   # TODO(edanaher): Read from stdin.
-  #executer.run_in_vm!(%Q{echo '{"name": "test"}' > data})
-  #executer.run_in_vm!("#{manager} add-depender-env-data-for-depender-app -a hello-go -r hello-proxy-go -f data")
-  executer.run_in_vm!(%Q{echo '{"Name": "test", "DataMap": {"contact_group": "atlantis_apps"}}' > data})
-  executer.run_in_vm!("#{manager} add-depender-env-data-for-depender-app -a cmk -r hello-go -f data")
+  executer.run_in_vm!(%Q{echo '{"Name": "test", "DataMap": {"address": "172.17.0.5"}}' > data})
+  executer.run_in_vm!("#{manager} add-depender-env-data-for-depender-app -a hello-go -r hello-proxy-go -f data")
   executer.run_in_vm!("rm data")
 
   #deploy apps
