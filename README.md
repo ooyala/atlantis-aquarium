@@ -9,10 +9,10 @@ Atlantis in a Vagrant VM!  Excellent for testing.
 * vagrant 1.7.2 or later
 
 # Bootstrap
-Control is primarily through the controller, **bin/atlantis-aquarium** (which should probably become a gem or
-other easily-installable package at some point).  
 
-Initial bootstrap can also be done using the **makeitso.sh** script.
+The following steps are needed in order to bootstrap atlantis aquarium. They are recorded in **makeitso.sh** script as well. 
+
+Control is primarily through the controller, **bin/atlantis-aquarium** (which should probably become a gem or other easily-installable package at some point).  
 
 ```
 $bin/atlantis-aquarium
@@ -39,7 +39,7 @@ Options:
 
 ## clone repos
 First, create **$HOME/repos** folder and clone atlantis-aquarium repo under this folder. 
-Then find **$HOME/repos/atlantis-aquarium/bin/clone-repos** script and run the script will clone several atlantis coomponents repos that 
+Then find **$HOME/repos/atlantis-aquarium/bin/clone-repos** script and run it; the script will clone several atlantis coomponents repos that 
 aquarium needs into **$HOME/repos** folder
 
 ```
@@ -49,15 +49,15 @@ $./bin/clone-repos
 ....
 
 $ls $HOME/repos
-atlantis-aquarium	atlantis-manager	atlantis-supervisor	hello-go
+atlantis-aquarium	atlantis-manager	atlantis-supervisor	hello-atlantis
 atlantis-builder	atlantis-router		go-docker-registry	
 
 ```
 
 ## provision
 
-First thing to do is to run provision; this will spin up vagrant VM called *aquarium* and install go, setup docker, etc.  
-Should be done with a fresh VM.
+Now it is time to bring up and provision vagrant VM. the *provision* subcommand will spin up vagrant VM called *aquarium* and install go, setup docker, etc.  
+This step should be done with a fresh VM.
 ```
 $bin/atlantis-aquarium provision
 
@@ -135,7 +135,7 @@ $bin/atlantis-aquairum build-layers [--base] [--builder]
 ``` 
 
 ## register-components 
-*register-components* registers the supervisors, routers, etc. with the manager.  Should be done once after all components are started, or after zookeeper is restarted.
+*register-components* registers the supervisors, routers, etc. with the manager. Should be done once after all components are started, or after zookeeper is restarted.
 
 ```
 $bin/atlantis-aquairum register-components
@@ -144,10 +144,26 @@ $bin/atlantis-aquairum register-components
 **Note:** you may be promoted to input LDAP username and/or password, just type enter to continue
 
 ## hello-world app
-*base-cluster* set up sample hello-go app and deploy it.  It is useful as a test to ensure everything is working in aquarium. Should be done after all steps has been taken;
+*base-cluster* set up a sample hello-go app and deploy it to supervisor.  It is useful as a test to ensure everything is working in aquarium. Should be done after all steps has been taken;
 
 ```
 $bin/atlantis-aquairum base-culster
+```
+If everything works out nicely, you just launched your first atlantis app in aquarium. Now check it out.
+```
+$bin/atlantis-aquarium ssh supervisor
+
+... ...
+
+root@c5fb42cc6eb4:~# docker ps 
+CONTAINER ID        IMAGE                                                                                COMMAND                CREATED             STATUS              PORTS                                                                                                                                                                                  NAMES
+d62dc9dc237e        registry.aquarium/apps/hello-go1.2-6292411629e73234fd0ecd0ded43b1fd259dfa44:latest   "runsvdir /etc/servi   6 minutes ago       Up 6 minutes        0.0.0.0:61000->61000/tcp, 0.0.0.0:61100->61100/tcp, 0.0.0.0:61200->61200/tcp, 0.0.0.0:61300->61300/tcp, 0.0.0.0:61400->61400/tcp, 0.0.0.0:61500->61500/tcp, 0.0.0.0:61600->61600/tcp   hello-go1.2-629241-test-oAZOK9   
+
+
+root@c5fb42cc6eb4:~# curl http://localhost:61000
+<!DOCTYPE html><html><head><title>hello-go</title></head><body><pre>
+Hello from Go /
+</pre></body></html>
 ```
  
 ## Convenience wrapper for atlantis-manager CLI

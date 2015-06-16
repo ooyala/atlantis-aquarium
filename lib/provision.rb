@@ -31,8 +31,8 @@ class Provision
       #sleep 5 second, waiting for dnsmasq to refresh 
       executer.run_in_vm!("sleep 5")
 
-      executer.run_in_vm!("wget -c http://go.googlecode.com/files/go1.2.1.linux-amd64.tar.gz")
-      executer.run_in_vm!("sudo tar -C /usr/local -xzf go1.2.1.linux-amd64.tar.gz")
+      executer.run_in_vm!("wget -c https://storage.googleapis.com/golang/go1.3.3.linux-amd64.tar.gz")
+      executer.run_in_vm!("sudo tar -C /usr/local -xzf go1.3.3.linux-amd64.tar.gz")
       executer.run_in_vm!("echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile")
       puts 'run "source ~/.profile", or log out and back in to activate go'
     end
