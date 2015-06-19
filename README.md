@@ -5,7 +5,7 @@ Atlantis in a Vagrant VM!  Excellent for testing.
 
 # Requirements
 * git
-* ruby 1.9.1 or later
+* ruby 1.9.1 or later; gem install docopt 
 * vagrant 1.7.2 or later
 
 # Bootstrap
@@ -28,7 +28,6 @@ Usage:
   atlantis-aquarium register-components
   atlantis-aquarium base-cluster
   atlantis-aquarium build-layers  [--base] [--builder]
-  atlantis-aquarium nuke-system
 
 Options:
   -C, --compile  Only compile; don't build image or deploy
@@ -56,8 +55,7 @@ atlantis-builder	atlantis-router		go-docker-registry
 
 ## provision
 
-Now it is time to bring up and provision vagrant VM. the *provision* subcommand will spin up vagrant VM called *aquarium* and install go, setup docker, etc.  
-This step should be done with a fresh VM.
+*provision* subcommand install go, setup docker, etc in the vagrant VM. This step should be done with a fresh VM.
 ```
 $bin/atlantis-aquarium provision
 
@@ -105,6 +103,13 @@ or, to build and (re)start a single component
 ```
 $bin/atlantis-aquarium build <component-name>
 ```
+
+### Known issue with build
+While running *build* subcommand, sometimes it fails with error message like this
+```
+INFO[0024] Error getting container 2328b2d6de9727c41ad1dcf1f977057a1cedb15e65c466a01482c09576236618 from driver devicemapper: open /dev/mapper/docker-8:1-403558-2328b2d6de9727c41ad1dcf1f977057a1cedb15e65c466a01482c09576236618: no such file or directory 
+```
+This is caused by well known docker issue (https://github.com/docker/docker/issues/4036) where docker having a race condition in storage backend. Re-run the build normally will pass.  
 
 ## interact with the components
 Once the components built, you can start/stop/restart or obtain ssh shell into the container 
@@ -179,13 +184,6 @@ $bin/atlantis-aquarium atlantis list-env
 ```
 $./nuke.sh
 ```
-
-#Known issues
-While running *build* subcommand, sometimes it fails with error message like this
-```
-INFO[0024] Error getting container 2328b2d6de9727c41ad1dcf1f977057a1cedb15e65c466a01482c09576236618 from driver devicemapper: open /dev/mapper/docker-8:1-403558-2328b2d6de9727c41ad1dcf1f977057a1cedb15e65c466a01482c09576236618: no such file or directory 
-```
-This is caused by well known docker issue (https://github.com/docker/docker/issues/4036) where docker having a race condition in storage backend. Re-run the build normally will pass.  
 
 
 
