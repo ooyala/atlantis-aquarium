@@ -22,7 +22,7 @@ function build-with-retry() {
 }
 
 print "==== git clone atlantis components ===="
-bin/clone-repos
+bin/gather-files
 
 print "==== Bringing vagrant up ===="
 vagrant up $aquarium

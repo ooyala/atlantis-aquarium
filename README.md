@@ -38,8 +38,7 @@ Options:
 
 ## clone repos
 First, create **$HOME/repos** folder and clone atlantis-aquarium repo under this folder. 
-Then find **$HOME/repos/atlantis-aquarium/bin/clone-repos** script and run it; the script will clone several atlantis coomponents repos that 
-aquarium needs into **$HOME/repos** folder
+Then find **$HOME/repos/atlantis-aquarium/bin/gather-files** script and run it; the script will clone several atlantis coomponents repos that aquarium needs into **$HOME/repos** folder; 
 
 ```
 $cd $HOME/repos/atlantis-aquairum

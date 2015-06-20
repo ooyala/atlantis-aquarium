@@ -49,6 +49,11 @@ def clone_repos
         system("cd #{hello_path} && git add #{go_path} && git commit -a -m 'aquarium add hello-go1.2'")
       end
 
+      # download tiny.tgz which is needed to build base image for atlantis apps
+      tiny_path = "#{repos_home}/atlantis-aquarium/data/builder/images/tiny.tgz"
+      unless File.exist?(tiny_path)
+        system("curl -kL -o #{tiny_path} https://www.dropbox.com/s/un998n261dfa32y/tiny.tgz?dl=1")
+      end
 end
 
 clone_repos
