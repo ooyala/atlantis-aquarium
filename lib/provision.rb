@@ -28,8 +28,8 @@ class Provision
     def install_go
       executer = Executer.new("data/setup")
 
-      #sleep 5 second, waiting for dnsmasq to refresh 
-      executer.run_in_vm!("sleep 5")
+      #sleep 10 second, waiting for dnsmasq to refresh 
+      executer.run_in_vm!("sleep 10")
 
       executer.run_in_vm!("wget -c https://storage.googleapis.com/golang/go1.3.3.linux-amd64.tar.gz")
       executer.run_in_vm!("sudo tar -C /usr/local -xzf go1.3.3.linux-amd64.tar.gz")
@@ -87,7 +87,7 @@ EOF})
 
     def install_misc_packages
       executer = Executer.new("data/setup")
-      packages = %w{vim screen git libzookeeper-mt-dev zookeeper dnsmasq inotify-tools apparmor}
+      packages = %w{vim screen git libzookeeper-mt-dev zookeeper dnsmasq inotify-tools apparmor runit}
       executer.run_in_vm!("sudo apt-get install -y #{packages.join(" ")}")
       executer.run_in_vm!("sudo apt-get -y autoremove")
     end
@@ -111,8 +111,8 @@ EOF})
       executer.run_in_vm!("sudo service dnsmasq restart", :status => 129)
       executer.run_in_vm!("sudo mkdir -p /etc/aquarium")
       executer.run_in_vm!("sudo touch /etc/aquarium/hosts-manager")
-      executer.run_in_vm!("killall watch-hosts.sh || true")
-      executer.run_in_vm!("nohup ./watch-hosts.sh > /dev/null & sleep 2")
+      #executer.run_in_vm!("killall watch-hosts.sh || true")
+      executer.run_in_vm!("sudo sh -c 'mkdir -p /etc/service/watch-hosts && cp ./watch-hosts.sh /etc/service/watch-hosts/run'")
     end
 
     def configure_parallel
