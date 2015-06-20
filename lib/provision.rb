@@ -59,7 +59,7 @@ EOF})
       executer.run_in_vm!("sudo cp squid.conf /etc/squid3")
       executer.run_in_vm!("sudo service squid3 restart")
       # We need to wait while squid starts up in the background
-      sleep 5
+      sleep 15
       # Start squid after the cache directory is mounted
       executer.run_in_vm!("sudo sed -i 's/start on runlevel.*/start on vagrant-mounted/' /etc/init/squid3.conf")
     end
