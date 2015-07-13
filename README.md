@@ -41,7 +41,7 @@ First, create **$HOME/repos** folder and clone atlantis-aquarium repo under this
 Then find **$HOME/repos/atlantis-aquarium/bin/gather-files** script and run it; the script will clone several atlantis coomponents repos that aquarium needs into **$HOME/repos** folder; 
 
 ```
-$cd $HOME/repos/atlantis-aquairum
+$cd $HOME/repos/atlantis-aquarium
 $./bin/clone-repos
 
 ....
@@ -126,7 +126,7 @@ Once the components built, you can start/stop/restart or obtain ssh shell into t
   instead.
 
 ```
-$bin/atlantis-aquairum start|stop|restart|ssh <component-name>
+$bin/atlantis-aquarium start|stop|restart|ssh <component-name>
 ``` 
 ## build-layers
 *build-layers* subcommand builds layers required for deploying.  Only needed for the simple builder, as aquarium used. it support following options:
@@ -135,14 +135,14 @@ $bin/atlantis-aquairum start|stop|restart|ssh <component-name>
 * *--builder* builds only the language-specific layers (e.g., ruby1.9.3, go1.2).  Should be done when layers are modifed or the builder is restarted.
 
 ```
-$bin/atlantis-aquairum build-layers [--base] [--builder]
+$bin/atlantis-aquarium build-layers [--base] [--builder]
 ``` 
 
 ## register-components 
 *register-components* registers the supervisors, routers, etc. with the manager. Should be done once after all components are started, or after zookeeper is restarted.
 
 ```
-$bin/atlantis-aquairum register-components
+$bin/atlantis-aquarium register-components
 ```
 
 **Note:** you may be promoted to input LDAP username and/or password, just type enter to continue
@@ -151,7 +151,7 @@ $bin/atlantis-aquairum register-components
 *base-cluster* set up a sample hello-go app and deploy it to supervisor.  It is useful as a test to ensure everything is working in aquarium. Should be done after all steps has been taken;
 
 ```
-$bin/atlantis-aquairum base-culster
+$bin/atlantis-aquarium base-culster
 ```
 If everything works out nicely, you just launched your first atlantis app in aquarium. Now check it out.
 ```
