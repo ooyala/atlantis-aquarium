@@ -44,7 +44,12 @@ class Provision
 
     def setup_conveniences
       executer = Executer.new("data/setup")
+
+      #setup folder where registry hold docker images
+      executer.run_in_vm!("sudo mkdir -p /atlantis-docker")
+
       # Set up nice ssh access
+      
       executer.run_in_vm!(%q{cat > ~/.ssh/config <<EOF
         Host 172.17.0.*
         User root
@@ -111,6 +116,7 @@ EOF})
       executer.run_in_vm!("sudo service dnsmasq restart", :status => 129)
       executer.run_in_vm!("sudo mkdir -p /etc/aquarium")
       executer.run_in_vm!("sudo touch /etc/aquarium/hosts-manager")
+      executer.run_in_vm!("sudo touch /etc/aquarium/hosts-aquarium")
       #executer.run_in_vm!("killall watch-hosts.sh || true")
       executer.run_in_vm!("sudo sh -c 'mkdir -p /etc/service/watch-hosts && cp ./watch-hosts.sh /etc/service/watch-hosts/run'")
     end
