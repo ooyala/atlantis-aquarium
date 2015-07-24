@@ -125,7 +125,7 @@ def start(component)
     component.set_value("ip", ip.chomp)
     if ["zookeeper", "registry", "builder"].include?(component.name)
       component_cname = component.name + ".aquarium"
-      host_file = "/etc/aquarium/hosts-manager"
+      host_file = "/etc/aquarium/hosts-aquarium"
       new_entry = ip.strip + ' ' + component_cname
       executer.run_in_vm!("sudo sh -c \"grep -q #{component_cname} #{host_file} && sed -i \'s;.*#{component_cname}.*;#{new_entry};\' #{host_file} || echo \'#{new_entry}\' >> #{host_file}\"")
     end
@@ -210,7 +210,7 @@ def register_components
   executer.run_in_vm!("#{manager} create-env -n test")
 
   # Register supervisors
-  (1..1).each do |s|
+  (1..2).each do |s|
     executer.run_in_vm!("#{manager} register-supervisor -H $(cat supervisor/ip-#{s})")
   end
 
@@ -322,6 +322,7 @@ if __FILE__ == $0
     components.each do |component|
       component.each_instance(options["--instance"]) do |instance|
         start(instance)
+	sleep(2)
       end
     end
   elsif options["stop"]
@@ -334,6 +335,7 @@ if __FILE__ == $0
     components.each do |component|
       component.each_instance(options["--instance"]) do |instance|
         restart(instance)
+	sleep(2)
       end
     end
   elsif options["atlantis"]

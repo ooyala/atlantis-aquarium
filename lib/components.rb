@@ -172,7 +172,9 @@ class Component
         end,
         postimage: lambda do |component|
           FileUtils.rm "#{component.directory}/id_rsa.pub"
-        end
+        end,
+
+        docker_opts: ['-v /atlantis-docker:/atlantis-docker'].join(" ")
        },	
 
       "router" => {
@@ -204,9 +206,8 @@ class Component
         end,
         docker_opts: "--privileged",
         instances: {
-          "1" => {}
-          #"2" => {},
-          #"3" => {}
+          "1" => {},
+          "2" => {}
         }
       },
       "zookeeper" => {},

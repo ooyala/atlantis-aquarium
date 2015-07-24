@@ -5,8 +5,9 @@ Atlantis in a Vagrant VM!  Excellent for testing.
 
 # Requirements
 * git
-* ruby 1.9.1 or later; gem install docopt 
+* ruby 1.9.1 or later; with compatible docopt gem installed 
 * vagrant 1.7.2 or later
+* virtual box 4.3.20 or later
 
 # Bootstrap
 
