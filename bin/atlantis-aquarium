@@ -187,12 +187,10 @@ def build_layers(base, builder)
     if !File.exists?("data/builder/images/tiny.tgz")
       raise "Error: file data/builder/images/tiny.tgz does not exist.  Images cannot be built"
     end
-    #executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` http_proxy=http://172.17.42.1:3128 #{mkbase} -f /root/images/tiny.tgz"})
     executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=registry.aquarium #{mkbase} -f images/tiny.tgz"})
   end
   if builder
     builder = "/opt/atlantis/builder/bin/atlantis-builder"
-    #executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` http_proxy=http://172.17.42.1:3128 #{builder} -boot"})
     executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=registry.aquarium #{builder} -boot"})
   end
 end
@@ -236,22 +234,7 @@ def start_apps
 
   # Register apps
   executer.run_in_vm!("#{manager} register-app -a hello-go1.2 -i -r hello/go1.2 -g #{repo_root}/hello-atlantis -e me@example.com")
-  
-
-
-  #apps = {"hello-go" => ["10ba55264d25b67ba34a848fcca4699ebb66bf41", true, nil]}
-  #        "hello-ruby" => ["bd4625f0d77d08846b0a10ad07b6a2756b559b26", true, nil],
-  #        "hello-proxy-go" => ["bccae2fa5a9765ccb00ef399f006b7b00b274a3f", false, nil],
-  #        "log_hog" => ["ee5a3adbc33b9009ad960d0a8e3092012c2fce91", true, "test_apps"]}
-
-  #apps.each do |app, config|
-  #  sha, internal, parent = config
-  #  i = internal ? "-i" : ""
-  #  repo = parent || app
-  #  root = parent ? "/#{app}" : "/"
-  #  executer.run_in_vm!("#{manager} register-app -a #{app} #{i} -g #{repo_root}/#{repo} -r #{root} -e me@example.com")
-  #end
-  
+    
   # TODO(edanaher): Read from stdin.
   #executer.run_in_vm!(%Q{echo '{"Name": "test", "DataMap": {"address": "172.17.0.5"}}' > data})
   #executer.run_in_vm!("#{manager} add-depender-env-data-for-depender-app -a hello-go -r hello-proxy-go -f data")
@@ -261,9 +244,6 @@ def start_apps
   #executer.run_in_vm!(%Q{echo '{"Name": "test", "SecurityGroup":"internal-router",  "DataMap": {"contact_group": "atlantis_apps"}}' > data})
   #executer.run_in_vm!("#{manager} add-depender-env-data-for-depender-app -a cmk -r hello-go -f data")
   #executer.run_in_vm!("rm data")
- 
-
-
 
 
   #deploy apps

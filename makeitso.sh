@@ -3,22 +3,21 @@
 set -ex
 
 function print() {
-	echo [33m"$@"[0m
+  echo [33m"$@"[0m
 }
 
 function build-with-retry() {
-    print "=== Building $@ ==="
-    n=0
-    until [ $n -ge 3 ]
-    do
-      bin/atlantis-aquarium build $@ && return
-      n=$[$n+1]
-      print "=== Build $@ failed, will retry in 10 second ==="
-      sleep 10
-   done
-   print "=== BUILD $@ FAILED !!! ===" 
-   return -1
-
+  print "=== Building $@ ==="
+  n=0
+  until [ $n -ge 3 ]
+  do
+    bin/atlantis-aquarium build $@ && return
+    n=$[$n+1]
+    print "=== Build $@ failed, will retry in 10 second ==="     
+    sleep 10
+  done
+  print "=== BUILD $@ FAILED !!! ===" 
+  return -1
 }
 
 print "==== git clone atlantis components ===="
@@ -35,7 +34,7 @@ bin/atlantis-aquarium provision
 print "==== Building and starting services ===="
 for component in base-aquarium-image zookeeper registry builder manager router supervisor
 do
-    build-with-retry $component
+  build-with-retry $component
 done
 
 print "==== Building base layers ===="

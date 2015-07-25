@@ -3,16 +3,15 @@
 set -e
 
 function start-with-retry() {
-    n=0
-    until [ $n -ge 5 ]
-    do
-      bin/atlantis-aquarium start && return
-      n=$[$n+1]
-      sleep 5
-   done
-   print "=== Something goes wrong. Start components with aquarium VM failed after 5 attempts!!! ===" 
-   return -1
-
+  n=0
+  until [ $n -ge 5 ]
+  do
+    bin/atlantis-aquarium start && return
+    n=$[$n+1]
+    sleep 5
+  done
+  print "=== Something goes wrong. Start components with aquarium VM failed after 5 attempts!!! ===" 
+  return -1
 }
 
 if [ "$PWD" != "$HOME/repos/atlantis-aquarium" ]

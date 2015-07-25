@@ -149,11 +149,6 @@ class Component
         end,
         preimage: lambda do |component|
           status = Status.read
-          #params = {
-          #  :zookeeper_host => "#{status["zookeeper"]["ip"]}:2181",
-          #  :simple_builder_host => "#{status["builder"]["ip"]}:8080"
-          #}
-          #template("#{component.directory}/server.toml", params)
         end,
         poststart: lambda do |component|
           status = Status.read
@@ -167,7 +162,7 @@ class Component
       "registry" => {
         debs: ["go-docker-registry"],
         repo: "go-docker-registry", 
-	preimage: lambda do |component|
+        preimage: lambda do |component|
           FileUtils.cp "#{ENV["HOME"]}/.ssh/id_rsa.pub", component.directory
         end,
         postimage: lambda do |component|
