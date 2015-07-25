@@ -31,7 +31,7 @@ again.
 
 HTTP server doesn't seem to support byte ranges. Cannot resume.
 ```
- Current vagrant box host (hashicorp) does not support range request, so the previous partial download cannot be resumed. The solution is to remove the partial downloaded vagrant box image and try again. 
+ Vagrant box host we are using (hashicorp) does not support range request, so the previous partial download cannot be resumed. The solution is to remove the partial downloaded vagrant box image and try again. 
 ```
  rm ~/.vagrant.d/tmp/*
 ```
@@ -39,7 +39,9 @@ HTTP server doesn't seem to support byte ranges. Cannot resume.
 ### How do I ssh into a container in aquarium VM?
 Use bin/atlantis-aquarium ssh command, refer to [interact with the components](##interact with the components)
 
-
+### What happens if my VM get reloaded?
+After the VM restart, you need to run launch-aquarium.sh again in order to bring up the containers. Please remember apps hosted in atlantis supervisor will not be recovered; you have to deploy them again.
+ 
 #Control 
 
 Control is primarily through the controller, **bin/atlantis-aquarium** (which should probably become a gem or other easily-installable package at some point).  
@@ -99,7 +101,7 @@ $bin/atlantis-aquarium ssh manager
 *atlantis* subcommand will pass remaining arguments to the atlantis-manager cli run within the VM; this is
 a convenience, e.g.
 ```
-ghao@ghao-MBR15:atlantis-aquarium>bin/atlantis-aquarium atlantis list-supervisors
+atlantis-aquarium>bin/atlantis-aquarium atlantis list-supervisors
 
 {"build"=>false, "<component>"=>[], "--compile"=>0, "--no-cache"=>false, "--image"=>0, "--instance"=>"all", "--help"=>false, "-c"=>false, "start"=>false, "restart"=>false, "stop"=>false, "ssh"=>false, "command"=>0, "atlantis"=>true, "<arguments>"=>[], "provision"=>false, "register-components"=>false, "base-cluster"=>false, "build-layers"=>false, "--base"=>false, "--builder"=>false}
 Restarting in VM...
