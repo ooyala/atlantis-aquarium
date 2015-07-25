@@ -37,7 +37,7 @@ HTTP server doesn't seem to support byte ranges. Cannot resume.
 ```
 
 ### How do I ssh into a container in aquarium VM?
-Use bin/atlantis-aquarium ssh command, refer to [interact with the components](#interact with the components)
+Use bin/atlantis-aquarium ssh command, refer to [interact with the components](##interact with the components)
 
 
 #Control 
@@ -78,25 +78,41 @@ atlantis-aquarium supports following component names:
 Once the components built, you can start/stop/restart or obtain ssh shell into the container 
 
 - start: Ensure that the component is running.  If it is already running, it won't be restarted.
-
+```
+$bin/atlantis-aquarium start builder
+```
 - restart: Restart the container.  If it is running, it will be stopped and then started; if not, it will just
   be started.  Note that this restarts the container, so any data stored within it will be lost.  (E.g.,
   restarting Zookeeper will destroy all metadata about the cluster.
-
+```
+$bin/atlantis-aquarium restart manager
+```
 - stop: Ensure that the component is not running.  If it is already stopped, no action is taking.
-
 - ssh: ssh into the container for the given component/instance.  If no instance is given for supervisor or
   router, each instance will be ssh'd into in turn.  If no component is given, ssh into the Vagrant VM
   instead.
 
 ```
-$bin/atlantis-aquarium start builder
-$bin/atlantis-aquarium restart manager
 $bin/atlantis-aquarium ssh manager
+```
+## Convenience wrapper for atlantis-manager CLI
+*atlantis* subcommand will pass remaining arguments to the atlantis-manager cli run within the VM; this is
+a convenience, e.g.
+```
+ghao@ghao-MBR15:atlantis-aquarium>bin/atlantis-aquarium atlantis list-supervisors
 
-
-``` 
-
+{"build"=>false, "<component>"=>[], "--compile"=>0, "--no-cache"=>false, "--image"=>0, "--instance"=>"all", "--help"=>false, "-c"=>false, "start"=>false, "restart"=>false, "stop"=>false, "ssh"=>false, "command"=>0, "atlantis"=>true, "<arguments>"=>[], "provision"=>false, "register-components"=>false, "base-cluster"=>false, "build-layers"=>false, "--base"=>false, "--builder"=>false}
+Restarting in VM...
+{"build"=>false, "<component>"=>[], "--compile"=>0, "--no-cache"=>false, "--image"=>0, "--instance"=>"all", "--help"=>false, "-c"=>false, "start"=>false, "restart"=>false, "stop"=>false, "ssh"=>false, "command"=>0, "atlantis"=>true, "<arguments>"=>[], "provision"=>false, "register-components"=>false, "base-cluster"=>false, "build-layers"=>false, "--base"=>false, "--builder"=>false}
+cd .; atlantis -R dev list-supervisors
+LDAP Username: 
+2015/07/25 20:52:44 List Supervisors...
+2015/07/25 20:52:44 -> status: OK
+2015/07/25 20:52:44 -> supervisors:
+2015/07/25 20:52:44 ->   172.17.0.8
+2015/07/25 20:52:44 ->   172.17.0.9
+Connection to 127.0.0.1 closed.
+```
 
 # Manually
 
@@ -219,13 +235,6 @@ Hello from Go /
 </pre></body></html>
 ```
  
-## Convenience wrapper for atlantis-manager CLI
-*atlantis* subcommand will pass remaining arguments to the atlantis-manager cli run within the VM; this is
-a convenience, e.g.
-```
-$bin/atlantis-aquarium atlantis list-env
-```
-
 ## Clean up
 *nuke.sh*, as the name suggested, tear down everything!
 
