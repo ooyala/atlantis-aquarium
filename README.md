@@ -9,9 +9,38 @@ Atlantis in a Vagrant VM!  Excellent for testing.
 * vagrant 1.7.2 or later
 * virtual box 4.3.20 or later
 
-# Bootstrap
+You can install aquarium in the following approaches:
+* [Vagrant](#vagrant) (recommended)
+* [Manually](#Manually) (build VM from gound up)
 
-The following steps are needed in order to bootstrap atlantis aquarium. They are recorded in **makeitso.sh** script as well. 
+#Vagrant
+We have a vagrant box available. To run it, 
+ * create **$HOME/repos** folder and clone atlantis-aquarium repo under this folder
+ * enter atlantis-aquairum folder and run **launch-aquairum.sh** script; 
+
+## what is inside the vagrant box
+Once atlantis-aquarium vagrant box up and running, inside it runs a zookeeper, a docker registry, an atlantis-builder, an atlantis-manager, two routers (one internal and one external) and two atlantis-supervisors, each component lives within a docker container.
+
+##FAQ
+### lanuch-aquarium.sh gets killed while downloading vagrant box, and re-run the script gives me error 
+```
+=> default: Box download is resuming from prior download progress
+An error occurred while downloading the remote file. The error
+message, if any, is reproduced below. Please fix this error and try
+again.
+
+HTTP server doesn't seem to support byte ranges. Cannot resume.
+```
+ Current vagrant box host (hashicorp) does not support range request, so the previous partial download cannot be resumed. The solution is to remove the partial downloaded vagrant box image and try again. 
+```
+ rm ~/.vagrant.d/tmp/*
+```
+
+### How do I ssh into a container in aquarium VM?
+Use bin/atlantis-aquarium ssh command, refer to [interact with the components](#interact with the components)
+
+
+#Control 
 
 Control is primarily through the controller, **bin/atlantis-aquarium** (which should probably become a gem or other easily-installable package at some point).  
 
@@ -36,6 +65,43 @@ Options:
   -i, --instance Which instance of the component to act on [default: all]
   -h, --help     Show usage
 ```
+## component names
+atlantis-aquarium supports following component names:
+ * zookeeper
+ * registry
+ * builder
+ * manager
+ * router
+ * supervisor
+
+## interact with the components
+Once the components built, you can start/stop/restart or obtain ssh shell into the container 
+
+- start: Ensure that the component is running.  If it is already running, it won't be restarted.
+
+- restart: Restart the container.  If it is running, it will be stopped and then started; if not, it will just
+  be started.  Note that this restarts the container, so any data stored within it will be lost.  (E.g.,
+  restarting Zookeeper will destroy all metadata about the cluster.
+
+- stop: Ensure that the component is not running.  If it is already stopped, no action is taking.
+
+- ssh: ssh into the container for the given component/instance.  If no instance is given for supervisor or
+  router, each instance will be ssh'd into in turn.  If no component is given, ssh into the Vagrant VM
+  instead.
+
+```
+$bin/atlantis-aquarium start builder
+$bin/atlantis-aquarium restart manager
+$bin/atlantis-aquarium ssh manager
+
+
+``` 
+
+
+# Manually
+
+The following steps are needed in order to bootstrap atlantis aquarium. 
+The steps are recorded in **makeitso.sh** script. 
 
 ## clone repos
 First, create **$HOME/repos** folder and clone atlantis-aquarium repo under this folder. 
@@ -111,24 +177,6 @@ INFO[0024] Error getting container 2328b2d6de9727c41ad1dcf1f977057a1cedb15e65c46
 ```
 This is caused by well known docker issue (https://github.com/docker/docker/issues/4036) where docker having a race condition in storage backend. Re-run the build normally will pass.  
 
-## interact with the components
-Once the components built, you can start/stop/restart or obtain ssh shell into the container 
-
-- start: Ensure that the component is running.  If it is already running, it won't be restarted.
-
-- restart: Restart the container.  If it is running, it will be stopped and then started; if not, it will just
-  be started.  Note that this restarts the container, so any data stored within it will be lost.  (E.g.,
-  restarting Zookeeper will destroy all metadata about the cluster.
-
-- stop: Ensure that the component is not running.  If it is already stopped, no action is taking.
-
-- ssh: ssh into the container for the given component/instance.  If no instance is given for supervisor or
-  router, each instance will be ssh'd into in turn.  If no component is given, ssh into the Vagrant VM
-  instead.
-
-```
-$bin/atlantis-aquarium start|stop|restart|ssh <component-name>
-``` 
 ## build-layers
 *build-layers* subcommand builds layers required for deploying.  Only needed for the simple builder, as aquarium used. it support following options:
  
