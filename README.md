@@ -245,7 +245,7 @@ $./nuke.sh
 ```
 
 ## Miscellaneous Errors
-
+```
 1. Do you see error downloading  virtual box image at https://atlas.hashicorp.com/ghao/boxes/atlantis-aquarium/versions/0.0.1/providers/virtualbox.box its most likely because URL redirect. Simply curl the url grab the redirected URL and in Vagrantfile ucomment aquarium.vm.box, aquarium.vm.box_url and comment out aquarium.vm.box. Also set aquarium.vm.box_url to the redirected url.
 
 
@@ -279,4 +279,11 @@ Now reload the vagrant and launch aquarium
 $vagrant reload
 $./launch-aquarium.sh
 $bin/atlantis-aquarium base-cluster
+
+3. Want to cleanup state in zookeeper.
+$vagrant ssh
+$/usr/share/zookeeper/bin/zkCli.sh -server `cat data/zookeeper/ip`
+$delete /atlantis/supervisors/dev/172.17.0.8
+
+```
 
