@@ -36,6 +36,7 @@ Usage:
   #$0 register-components
   #$0 base-cluster
   #$0 build-layers  [--base] [--builder]
+  #$0 zookeeper
 
 Options:
   -C, --compile          Only compile; don't build image or deploy
@@ -257,6 +258,11 @@ def start_apps
   end
 end
 
+def login_zookeeper
+  executer = Executer.new("data")
+  executer.run_in_vm!("/usr/share/zookeeper/bin/zkCli.sh -server $(cat zookeeper/ip)")
+end
+
 if __FILE__ == $0
   trailing_args = preprocess_arguments_for_commands(ARGV)
 
@@ -298,6 +304,8 @@ if __FILE__ == $0
     register_components
   elsif options["base-cluster"]
     start_apps
+  elsif options["zookeeper"]
+    login_zookeeper
   elsif options["start"]
     components.each do |component|
       component.each_instance(options["--instance"]) do |instance|

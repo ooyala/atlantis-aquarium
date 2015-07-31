@@ -60,6 +60,7 @@ Usage:
   atlantis-aquarium register-components
   atlantis-aquarium base-cluster
   atlantis-aquarium build-layers  [--base] [--builder]
+  atlantis-aquarium zookeeper
 
 Options:
   -C, --compile  Only compile; don't build image or deploy
@@ -96,6 +97,11 @@ $bin/atlantis-aquarium restart manager
 
 ```
 $bin/atlantis-aquarium ssh manager
+```
+## Access zookeeper running in aquarium
+atlantis-aquarium provides a short hand command to access zookeeper
+```
+$bin/atlantis-aquarium zookeeper
 ```
 ## Convenience wrapper for atlantis-manager CLI
 *atlantis* subcommand will pass remaining arguments to the atlantis-manager cli run within the VM; this is
