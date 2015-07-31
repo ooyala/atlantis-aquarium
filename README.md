@@ -246,7 +246,10 @@ $./nuke.sh
 
 ## Miscellaneous Errors
 ```
-1. Do you see error downloading  virtual box image at https://atlas.hashicorp.com/ghao/boxes/atlantis-aquarium/versions/0.0.1/providers/virtualbox.box its most likely because URL redirect. Simply curl the url grab the redirected URL and in Vagrantfile ucomment aquarium.vm.box, aquarium.vm.box_url and comment out aquarium.vm.box. Also set aquarium.vm.box_url to the redirected url.
+1. Do you see error downloading  virtual box image at
+https://atlas.hashicorp.com/ghao/boxes/atlantis-aquarium/versions/0.0.1/providers/virtualbox.box its most likely
+because URL redirect. Simply curl the url grab the redirected URL and in Vagrantfile ucomment aquarium.vm.box,
+aquarium.vm.box_url and comment out aquarium.vm.box. Also set aquarium.vm.box_url to the redirected url.
 
 
 2. You see following error while building the app
