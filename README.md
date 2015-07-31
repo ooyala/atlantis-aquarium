@@ -246,9 +246,37 @@ $./nuke.sh
 
 ## Miscellaneous Errors
 
-Do you see error downloading  virtual box image at https://atlas.hashicorp.com/ghao/boxes/atlantis-aquarium/versions/0.0.1/providers/virtualbox.box its most likely because URL redirect. Simply curl the url grab the redirected URL and in Vagrantfile ucomment aquarium.vm.box, aquarium.vm.box_url and comment out aquarium.vm.box. Also set aquarium.vm.box_url to the redirected url.
+1. Do you see error downloading  virtual box image at https://atlas.hashicorp.com/ghao/boxes/atlantis-aquarium/versions/0.0.1/providers/virtualbox.box its most likely because URL redirect. Simply curl the url grab the redirected URL and in Vagrantfile ucomment aquarium.vm.box, aquarium.vm.box_url and comment out aquarium.vm.box. Also set aquarium.vm.box_url to the redirected url.
 
 
+2. You see following error while building the app
+$bin/atlantis-aquarium base-cluster
+..
+sh: 1: cd: can't cd to /home/vagrant/repos/hello-atlantis/
+..
+2015/07/31 21:54:58 Triggering Simple Build
+Build Error: map[]
+Connection to 127.0.0.1 closed
 
+You are missing the hello-go repo. Run folloing commands
+$bin/gather-files
+If the build still fails, checks repos and you will notice hello-atlantis directory is not synced
 
+$ls -al $HOME/repos 
+ls: cannot access hello-atlantis: No such file or directory
+total 4
+drwxr-xr-x 1 1001 1001  306 Jul 31 21:50 .
+drwx------ 6 root root 4096 Jul 31 21:54 ..
+drwxr-xr-x 1 1001 1001  612 Jul 31 19:19 atlantis-aquarium
+drwxr-xr-x 1 1001 1001  544 Jul 31 21:49 atlantis-builder
+drwxr-xr-x 1 1001 1001  442 Jul 31 21:48 atlantis-manager
+drwxr-xr-x 1 1001 1001  442 Jul 31 21:49 atlantis-router
+drwxr-xr-x 1 1001 1001  476 Jul 31 21:49 atlantis-supervisor
+drwxr-xr-x 1 1001 1001  442 Jul 31 21:48 go-docker-registry
+?????????? ? ?    ?       ?            ? hello-atlantis
+
+Now reload the vagrant and launch aquarium
+$vagrant reload
+$./launch-aquarium.sh
+$bin/atlantis-aquarium base-cluster
 
