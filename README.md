@@ -50,23 +50,23 @@ Control is primarily through the controller, **bin/atlantis-aquarium** (which sh
 $bin/atlantis-aquarium
 
 Usage:
-	atlantis-aquarium build   [<component>...] [options] [-C | --compile] [-I | --image]
-	atlantis-aquarium start   [<component>...] [options]
-	atlantis-aquarium restart  <component>...  [options]
-	atlantis-aquarium stop     <component>...  [options]
-	atlantis-aquarium ssh     [<component>]    [options]
-	atlantis-aquarium atlantis [--] [<argument>...]
-	atlantis-aquarium provision
-	atlantis-aquarium register-components
-	atlantis-aquarium base-cluster
-	atlantis-aquarium build-layers  [--base] [--builder]
-	atlantis-aquarium zookeeper
+  atlantis-aquarium build   [<component>...] [options] [-C | --compile] [-I | --image]
+  atlantis-aquarium start   [<component>...] [options]
+  atlantis-aquarium restart  <component>...  [options]
+  atlantis-aquarium stop     <component>...  [options]
+  atlantis-aquarium ssh     [<component>]    [options]
+  atlantis-aquarium atlantis [--] [<argument>...]
+  atlantis-aquarium provision
+  atlantis-aquarium register-components
+  atlantis-aquarium base-cluster
+  atlantis-aquarium build-layers  [--base] [--builder]
+  atlantis-aquarium zookeeper
 
 Options:
-	-C, --compile  Only compile; don't build image or deploy
-	-I, --image    Only compile and build Docker image; don't deploy
-	-i, --instance Which instance of the component to act on [default: all]
-	-h, --help     Show usage
+  -C, --compile  Only compile; don't build image or deploy
+  -I, --image    Only compile and build Docker image; don't deploy
+  -i, --instance Which instance of the component to act on [default: all]
+  -h, --help     Show usage
 ```
 ## component names
 atlantis-aquarium supports following component names:
@@ -84,16 +84,12 @@ Once the components built, you can start/stop/restart or obtain ssh shell into t
 ```
 $bin/atlantis-aquarium start builder
 ```
-- restart: Restart the container.  If it is running, it will be stopped and then started; if not, it will just
-	be started.  Note that this restarts the container, so any data stored within it will be lost.  (E.g.,
-	restarting Zookeeper will destroy all metadata about the cluster.
+- restart: Restart the container.  If it is running, it will be stopped and then started; if not, it will just be started.  Note that this restarts the container, so any data stored within it will be lost.  (E.g., restarting Zookeeper will destroy all metadata about the cluster.
 ```
 $bin/atlantis-aquarium restart manager
 ```
 - stop: Ensure that the component is not running.  If it is already stopped, no action is taking.
-- ssh: ssh into the container for the given component/instance.  If no instance is given for supervisor or
-	router, each instance will be ssh'd into in turn.  If no component is given, ssh into the Vagrant VM
-	instead.
+- ssh: ssh into the container for the given component/instance.  If no instance is given for supervisor or router, each instance will be ssh'd into in turn.  If no component is given, ssh into the Vagrant VM instead.
 
 ```
 $bin/atlantis-aquarium ssh manager
@@ -138,8 +134,8 @@ $./bin/clone-repos
 ....
 
 $ls $HOME/repos
-atlantis-aquarium	atlantis-manager	atlantis-supervisor	hello-atlantis
-atlantis-builder	atlantis-router		go-docker-registry
+atlantis-aquarium atlantis-manager  atlantis-supervisor hello-atlantis
+atlantis-builder  atlantis-router   go-docker-registry
 
 ```
 
