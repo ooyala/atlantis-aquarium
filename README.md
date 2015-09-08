@@ -5,24 +5,24 @@ Atlantis in a Vagrant VM!  Excellent for testing.
 
 # Requirements
 * Git
-* Ruby 1.9.1 or later; with compatible docopt gem installed
+* Ruby 1.9.1 or later with compatible docopt gem installed
 * Vagrant 1.7.2 or later
 * Virtual Box 4.3.20 or later
 
 You can install aquarium in the following approaches:
 * [Vagrant](#vagrant) (recommended)
-* [Manually](#Manually) (build VM from gound up)
+* [Manually](#Manually) (build VM from the ground up)
 
 #Vagrant
 We have a vagrant box available. To run it,
  * create **$HOME/repos** folder and clone atlantis-aquarium repo under this folder
- * enter atlantis-aquairum folder and run **launch-aquairum.sh** script;
+ * enter atlantis-aquarium folder and run **launch-aquairum.sh** script
 
-## what is inside the vagrant box
-Once atlantis-aquarium vagrant box up and running, inside it runs a zookeeper, a docker registry, an atlantis-builder, an atlantis-manager, two routers (one internal and one external) and two atlantis-supervisors, each component lives within a docker container.
+## What is inside the vagrant box
+Once the atlantis-aquarium vagrant box is up and running, it runs a zookeeper, a docker registry, an atlantis-builder, an atlantis-manager, two routers (one internal and one external) and two atlantis-supervisors.  Each component lives within a docker container.
 
 ##FAQ
-### lanuch-aquarium.sh gets killed while downloading vagrant box, and re-run the script gives me error
+### lanuch-aquarium.sh gets killed while downloading vagrant box, and re-running the script gives an error
 ```
 => default: Box download is resuming from prior download progress
 An error occurred while downloading the remote file. The error
@@ -31,16 +31,16 @@ again.
 
 HTTP server doesn't seem to support byte ranges. Cannot resume.
 ```
- Vagrant box host we are using (hashicorp) does not support range request, so the previous partial download cannot be resumed. The solution is to remove the partial downloaded vagrant box image and try again.
+The Vagrant box host we are using (hashicorp) does not support range request, so the previous partial download cannot be resumed. The solution is to remove the partial downloaded vagrant box image and try again.
 ```
  rm ~/.vagrant.d/tmp/*
 ```
 
 ### How do I ssh into a container in aquarium VM?
-Use bin/atlantis-aquarium ssh command, refer to [interact with the components](##interact with the components)
+Use bin/atlantis-aquarium ssh command; refer to [interacting with the components](##Interacting with the components)
 
 ### What happens if my VM get reloaded?
-After the VM restart, you need to run launch-aquarium.sh again in order to bring up the containers. Please remember apps hosted in atlantis supervisor will not be recovered; you have to deploy them again.
+After a VM restart, you need to run launch-aquarium.sh again in order to bring up the containers. Please remember apps hosted in atlantis supervisor will not be recovered; you have to deploy them again.
 
 #Control
 
@@ -68,8 +68,8 @@ Options:
   -i, --instance Which instance of the component to act on [default: all]
   -h, --help     Show usage
 ```
-## component names
-atlantis-aquarium supports following component names:
+## Component names
+atlantis-aquarium supports the following component names:
  * zookeeper
  * registry
  * builder
@@ -77,14 +77,14 @@ atlantis-aquarium supports following component names:
  * router
  * supervisor
 
-## interact with the components
-Once the components built, you can start/stop/restart or obtain ssh shell into the container
+## Interacting with the components
+Once the components are built, you can start/stop/restart or obtain an ssh shell into the container:
 
 - start: Ensure that the component is running.  If it is already running, it won't be restarted.
 ```
 $bin/atlantis-aquarium start builder
 ```
-- restart: Restart the container.  If it is running, it will be stopped and then started; if not, it will just be started.  Note that this restarts the container, so any data stored within it will be lost.  (E.g., restarting Zookeeper will destroy all metadata about the cluster.
+- restart: Restart the container.  If it is running, it will be stopped and then started; if not, it will just be started.  Note that this starts a fresh container, so any data stored within it will be lost.  (E.g., restarting Zookeeper will destroy all metadata about the cluster.)
 ```
 $bin/atlantis-aquarium restart manager
 ```
@@ -95,7 +95,7 @@ $bin/atlantis-aquarium restart manager
 $bin/atlantis-aquarium ssh manager
 ```
 ## Access zookeeper running in aquarium
-atlantis-aquarium provides a short hand command to access zookeeper
+atlantis-aquarium provides a short command to access zookeeper
 ```
 $bin/atlantis-aquarium zookeeper
 ```
@@ -125,7 +125,7 @@ The steps are recorded in **makeitso.sh** script.
 
 ## clone repos
 First, create **$HOME/repos** folder and clone atlantis-aquarium repo under this folder.
-Then find **$HOME/repos/atlantis-aquarium/bin/gather-files** script and run it; the script will clone several atlantis coomponents repos that aquarium needs into **$HOME/repos** folder;
+Then find **$HOME/repos/atlantis-aquarium/bin/gather-files** script and run it; the script will clone several atlantis coomponents repos that aquarium needs into the **$HOME/repos** folder;
 
 ```
 $cd $HOME/repos/atlantis-aquarium
@@ -141,7 +141,7 @@ atlantis-builder  atlantis-router   go-docker-registry
 
 ## provision
 
-*provision* subcommand install go, setup docker, etc in the vagrant VM. This step should be done with a fresh VM.
+The *provision* subcommand installs go, sets up docker, etc in the vagrant VM. This step should be done with a fresh VM.
 ```
 $bin/atlantis-aquarium provision
 
@@ -159,8 +159,8 @@ simply run `vagrant up`.
 ```
 
 ## build and start atlantis components
-Aquarium require following components. All but base-aquarium-image are services run in docker containers within the VM we just created;
-base-aquarium-image is a special target to build the base image that other components run inside.
+Aquarium requires the following components. All but base-aquarium-image are services that run in docker containers within the VM we just created;
+base-aquarium-image is a special target to build the base image that other components build off of.
 
 * **base-aquarium-image**: base docker image for every other components in this list
 * **zookeeper**: a single node zookeeper
@@ -171,7 +171,7 @@ base-aquarium-image is a special target to build the base image that other compo
 * **router-external**: https://github.com/ooyala/atlantis-router
 * **supervisor**: https://github.com/ooyala/atlantis-supervisor
 
-*build* subcommand compile, build the container, and (re)start the given component. *build* take following options
+The *build* subcommand compiles the component, builds the container, and (re)start the given component. *build* take following options
 
 ```
  -C, compiles only; If an instance is given, only that instance will be compiled
@@ -191,24 +191,24 @@ $bin/atlantis-aquarium build <component-name>
 ```
 
 ### Known issue with build
-While running *build* subcommand, sometimes it fails with error message like this
+While running *build* subcommand, sometimes it fails with error message like this:
 ```
 INFO[0024] Error getting container 2328b2d6de9727c41ad1dcf1f977057a1cedb15e65c466a01482c09576236618 from driver devicemapper: open /dev/mapper/docker-8:1-403558-2328b2d6de9727c41ad1dcf1f977057a1cedb15e65c466a01482c09576236618: no such file or directory
 ```
-This is caused by well known docker issue (https://github.com/docker/docker/issues/4036) where docker having a race condition in storage backend. Re-run the build will pass normally.
+This is caused by well known docker issue (https://github.com/docker/docker/issues/4036) where docker has a race condition in the storage backend. Re-running the build will pass normally.
 
 ## build-layers
-*build-layers* subcommand builds layers required for deploying.  Only needed for the simple builder, as used by aquarium. It support following options:
+The *build-layers* subcommand builds layers required for deploying.  This is only needed for the simple builder, as used by aquarium. It support following options:
 
 * *--base* builds only the base image
-* *--builder* builds only the language-specific layers (e.g., ruby1.9.3, go1.2).  Should be done when layers are modifed or the builder is restarted.
+* *--builder* builds only the language-specific layers (e.g., ruby1.9.3, go1.2).  Should be done when layers are modified or the builder is restarted.
 
 ```
 $bin/atlantis-aquarium build-layers [--base] [--builder]
 ```
 
 ## register-components
-*register-components* registers the supervisors, routers, etc. with the manager. Should be done once after all components are started, or after zookeeper is restarted.
+The *register-components* subcommand registers the supervisors, routers, etc. with the manager. Should be done once after all components are started, or after zookeeper is restarted.
 
 ```
 $bin/atlantis-aquarium register-components
@@ -217,12 +217,12 @@ $bin/atlantis-aquarium register-components
 **Note:** You may be prompted to input LDAP username and/or password, just type enter to continue
 
 ## hello-world app
-*base-cluster* set up a sample hello-go app and deploy it to supervisor.  It is useful as a test to ensure everything is working in aquarium. Should be done after all steps has been taken;
+The *base-cluster* subcommand sets up a sample hello-go app and deploys it to a supervisor.  It is useful as a test to ensure everything is working in aquarium. It should be done after all other steps have been taken.
 
 ```
 $bin/atlantis-aquarium base-culster
 ```
-If everything works out nicely, you just launched your first atlantis app in aquarium. Now check it out.
+If everything works out nicely, you just launched your first atlantis app in aquarium. Now check it out:
 ```
 $bin/atlantis-aquarium ssh supervisor
 
@@ -240,7 +240,7 @@ Hello from Go /
 ```
 
 ## Clean up
-*nuke.sh*, as the name suggested, tear down everything!
+*nuke.sh*, as the name suggested, tears down everything!
 
 ```
 $./nuke.sh
@@ -248,9 +248,9 @@ $./nuke.sh
 
 ## Miscellaneous Errors
 ```
-1. Do you see error downloading  virtual box image at
+1. If you see an error downloading the virtual box image at
 https://atlas.hashicorp.com/ghao/boxes/atlantis-aquarium/versions/0.0.1/providers/virtualbox.box its most likely
-because URL redirect. Simply curl the url grab the redirected URL and in Vagrantfile ucomment aquarium.vm.box,
+because of a URL redirect. Simply curl the url, grab the redirected URL and in the  Vagrantfile uncomment aquarium.vm.box,
 aquarium.vm.box_url and comment out aquarium.vm.box. Also set aquarium.vm.box_url to the redirected url.
 
 
@@ -263,9 +263,11 @@ sh: 1: cd: can't cd to /home/vagrant/repos/hello-atlantis/
 Build Error: map[]
 Connection to 127.0.0.1 closed
 
-You are missing the hello-go repo. Run following commands
+You are missing the hello-go repo. Run the following command:
+```
 $bin/gather-files
-If the build still fails, checks repos and you will notice hello-atlantis directory is not synced
+```
+If the build still fails, checks repos and you will probably notice the hello-atlantis directory is not synced
 
 $ls -al $HOME/repos
 ls: cannot access hello-atlantis: No such file or directory
