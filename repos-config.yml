@@ -1,0 +1,6 @@
+go-docker-registry: 'git@github.com:ooyala/go-docker-registry.git'
+atlantis-manager: 'git@github.com:ooyala/atlantis-manager.git'
+atlantis-builder: 'git@github.com:ooyala/atlantis-builder.git'
+atlantis-router: 'git@github.com:ooyala/atlantis-router.git'
+atlantis-supervisor: 'git@github.com:ooyala/atlantis-supervisor.git'
+hello-atlantis: 'git@github.com:ooyala/hello-atlantis.git'

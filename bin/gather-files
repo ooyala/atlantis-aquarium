@@ -4,34 +4,29 @@
 #
 # This script is used to clone and init all the git repositories atlantis-aqurium
 # needs in order to run "atlantis-aquarium build"
-# 
-# All repos will be placed under $HOME/repos folder 
+#
+# All repos will be placed under $HOME/repos folder
 #
 ##
+require 'yaml'
 
 $repos_home = File.expand_path('~') + "/repos"
 
 def clone_repos
-  
-  #list of git repos aquarium need to be cloned before can run
-  repos = {
-    "go-docker-registry"  => "git@github.com:ooyala/go-docker-registry.git",
-    "atlantis-manager"    => "git@github.com:ooyala/atlantis-manager.git",
-    "atlantis-builder"    => "git@github.com:ooyala/atlantis-builder.git",
-    "atlantis-router"     => "git@github.com:ooyala/atlantis-router.git",
-    "atlantis-supervisor" => "git@github.com:ooyala/atlantis-supervisor.git",
-    "hello-atlantis"      => "git@github.com:ooyala/hello-atlantis.git"
-  }
+
+  # list of git repos aquarium need to be cloned before it can be run
+  config_path = File.expand_path('../repos-config.yml', File.dirname(__FILE__))
+  repos = YAML.load(File.read(config_path))
 
   repos.each do |repo_name, repo_url|
-    #git clone and init submodules
+    # git clone and init submodules
     path = "#{$repos_home}/#{repo_name}"
     unless File.directory?(path)
       system("git clone #{repo_url} #{path}")
       system("cd #{path}; git checkout stabilize || true")
       system("cd #{path}; git submodule update --init")
-    else 
-      puts "#{path} already exists. skip git clone for this folder"	
+    else
+      puts "#{path} already exists. skip git clone for this folder"
     end
   end
 
