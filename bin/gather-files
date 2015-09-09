@@ -9,7 +9,8 @@
 #
 ##
 
-$repos_home = File.expand_path('~') + "/repos"
+$repos_home = ENV["ATLANTIS_REPO_ROOT"]
+$repos_home = File.expand_path('~') + "/repos"  if $repos_home.nil? || $repos_home.empty?
 
 def clone_repos
   

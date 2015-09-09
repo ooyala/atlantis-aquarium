@@ -2,8 +2,6 @@ require_relative "executer"
 require "fileutils"
 require "openssl"
 
-#require_relative './util'
-
 class Provision
   class <<self
     def provision
@@ -48,8 +46,7 @@ class Provision
       #setup folder where registry hold docker images
       executer.run_in_vm!("sudo mkdir -p /atlantis-docker")
 
-      # Set up nice ssh access
-      
+      #Set up nice ssh access
       executer.run_in_vm!(%q{cat > ~/.ssh/config <<EOF
         Host 172.17.0.*
         User root
@@ -72,7 +69,6 @@ EOF})
     def configure_apt
       executer = Executer.new("data/setup")
       # send apt through squid for caching
-      executer.run_in_vm!("sudo touch /etc/apt/apt.conf.d/99http-proxy")
       executer.run_in_vm!("echo 'Acquire::http::Proxy \"http://localhost:3128\";' | " +
                          "sudo tee /etc/apt/apt.conf.d/99http-proxy > /dev/null")
       executer.run_in_vm!("echo 'Acquire::https::Proxy \"https://localhost:3128\";' | " +
@@ -110,14 +106,12 @@ EOF})
     def configure_dnsmasq
       executer = Executer.new("data/setup")
       # Tell dnsmasq to use Aquarium Manager's hosts files as well.
-      #executer.run_in_vm!(%q{sudo service pdnsd stop})
       executer.run_in_vm!(%q{sudo sh -c "echo 'addn-hosts=/etc/aquarium/hosts-manager' > /etc/dnsmasq.d/aquarium-extra-hosts"})
       executer.run_in_vm!(%q{sudo sh -c "echo 'addn-hosts=/etc/aquarium/hosts-aquarium' >> /etc/dnsmasq.d/aquarium-extra-hosts"})
       executer.run_in_vm!("sudo service dnsmasq restart", :status => 129)
       executer.run_in_vm!("sudo mkdir -p /etc/aquarium")
       executer.run_in_vm!("sudo touch /etc/aquarium/hosts-manager")
       executer.run_in_vm!("sudo touch /etc/aquarium/hosts-aquarium")
-      #executer.run_in_vm!("killall watch-hosts.sh || true")
       executer.run_in_vm!("sudo sh -c 'mkdir -p /etc/service/watch-hosts && cp ./watch-hosts.sh /etc/service/watch-hosts/run'")
     end
 

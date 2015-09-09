@@ -1,4 +1,3 @@
-
 FROM aquarium-base
 MAINTAINER appsplat-team@ooyala.com
 

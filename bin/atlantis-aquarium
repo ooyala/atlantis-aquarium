@@ -260,7 +260,7 @@ end
 
 def login_zookeeper
   executer = Executer.new("data")
-  executer.run_in_vm!("/usr/share/zookeeper/bin/zkCli.sh -server $(cat zookeeper/ip)")
+  executer.run_in_vm!("/usr/share/zookeeper/bin/zkCli.sh -server zookeeper.aquarium")
 end
 
 if __FILE__ == $0
