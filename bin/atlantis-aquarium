@@ -36,6 +36,7 @@ Usage:
   #$0 register-components
   #$0 base-cluster
   #$0 build-layers  [--base] [--builder]
+  #$0 zookeeper
 
 Options:
   -C, --compile          Only compile; don't build image or deploy
@@ -87,7 +88,7 @@ def compile(component)
   executer.run_in_vm!("rm -f *.deb")
   executer.run_in_vm!("make -C #{component.repo}/ clean deb")
   component.debs.each do |deb|
-    executer.run_in_vm!("cp #{component.repo}/#{deb}_*.deb #{deb}.deb")
+    executer.run_in_vm!("if [ -f #{component.repo}/#{deb}_*.deb ]; then cp #{component.repo}/#{deb}_*.deb #{deb}.deb; else cp #{component.repo}/pkg/#{deb}_*.deb #{deb}.deb; fi ")
   end
   component.postcompile.call(executer)
 end
@@ -123,6 +124,12 @@ def start(component)
     File.write("#{component.directory}/#{ipfile}", ip)
     component.set_value("cid", cid.chomp)
     component.set_value("ip", ip.chomp)
+    if ["zookeeper", "registry", "builder"].include?(component.name)
+      component_cname = component.name + ".aquarium"
+      host_file = "/etc/aquarium/hosts-aquarium"
+      new_entry = ip.strip + ' ' + component_cname
+      executer.run_in_vm!("sudo sh -c \"grep -q #{component_cname} #{host_file} && sed -i \'s;.*#{component_cname}.*;#{new_entry};\' #{host_file} || echo \'#{new_entry}\' >> #{host_file}\"")
+    end
   end
   component.poststart.call(executer)
   component.set_status("running")
@@ -181,11 +188,11 @@ def build_layers(base, builder)
     if !File.exists?("data/builder/images/tiny.tgz")
       raise "Error: file data/builder/images/tiny.tgz does not exist.  Images cannot be built"
     end
-    executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` http_proxy=http://172.17.42.1:3128 #{mkbase} -f /root/images/tiny.tgz"})
+    executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=registry.aquarium #{mkbase} -f images/tiny.tgz"})
   end
   if builder
     builder = "/opt/atlantis/builder/bin/atlantis-builder"
-    executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=`cat ../registry/ip` http_proxy=http://172.17.42.1:3128 #{builder} -boot"})
+    executer.run_in_vm!(%Q{ssh `cat ip` "REGISTRY=registry.aquarium #{builder} -boot"})
   end
 end
 
@@ -194,14 +201,15 @@ def register_components
   manager = "atlantis-manager -R dev"
 
   # TODO(edanaher): This shouldn't be necessary.
+  executer.run_in_vm!(%q{echo 'create /atlantis ""' | /usr/share/zookeeper/bin/zkCli.sh -server $(cat zookeeper/ip)})
   executer.run_in_vm!(%q{echo 'create /atlantis/ip_groups ""' | /usr/share/zookeeper/bin/zkCli.sh -server $(cat zookeeper/ip)})
   executer.run_in_vm!(%q{echo 'create /atlantis/ip_groups/dev ""' | /usr/share/zookeeper/bin/zkCli.sh -server $(cat zookeeper/ip)})
 
   # Set credentials and create environment
-  executer.run_in_vm!("echo vagrant | #{manager} create-env -n test")
+  executer.run_in_vm!("#{manager} create-env -n test")
 
   # Register supervisors
-  (1..3).each do |s|
+  (1..2).each do |s|
     executer.run_in_vm!("#{manager} register-supervisor -H $(cat supervisor/ip-#{s})")
   end
 
@@ -219,25 +227,25 @@ def start_apps
   executer = Executer.new("data")
   manager = "atlantis-manager -R dev"
   repo_root = "file:///root/repos"
-  apps = {"hello-go" => ["10ba55264d25b67ba34a848fcca4699ebb66bf41", true, nil],
-          "hello-ruby" => ["bd4625f0d77d08846b0a10ad07b6a2756b559b26", true, nil],
-          "hello-proxy-go" => ["bccae2fa5a9765ccb00ef399f006b7b00b274a3f", false, nil],
-          "log_hog" => ["ee5a3adbc33b9009ad960d0a8e3092012c2fce91", true, "test_apps"]}
+
+  #find SHA of git HEAD and use it to deploy
+  sha = `cd ~/repos/hello-atlantis/ && git rev-parse HEAD`
+  puts "using hello-go commit " + sha
+  apps = {"hello-go1.2" => [sha.chomp, true, "hello-atlantis"]}
 
   # Register apps
-  apps.each do |app, config|
-    sha, internal, parent = config
-    i = internal ? "-i" : ""
-    repo = parent || app
-    root = parent ? "/#{app}" : "/"
-    executer.run_in_vm!("#{manager} register-app -a #{app} #{i} -g #{repo_root}/#{repo} -r #{root} -e me@example.com")
-  end
-
-  # Configure hello-proxy-go dependency on hello-go
+  executer.run_in_vm!("#{manager} register-app -a hello-go1.2 -i -r hello/go1.2 -g #{repo_root}/hello-atlantis -e me@example.com")
+    
   # TODO(edanaher): Read from stdin.
-  executer.run_in_vm!(%Q{echo '{"name": "test"}' > data})
-  executer.run_in_vm!("#{manager} add-depender-env-data-for-depender-app -a hello-go -r hello-proxy-go -f data")
-  executer.run_in_vm!("rm data")
+  #executer.run_in_vm!(%Q{echo '{"Name": "test", "DataMap": {"address": "172.17.0.5"}}' > data})
+  #executer.run_in_vm!("#{manager} add-depender-env-data-for-depender-app -a hello-go -r hello-proxy-go -f data")
+  #executer.run_in_vm!("rm data")
+
+  #executer.run_in_vm!("#{manager} register-app -a cmk -i -g #{repo_root}/cmk -r /cmk -e me@example.com")
+  #executer.run_in_vm!(%Q{echo '{"Name": "test", "SecurityGroup":"internal-router",  "DataMap": {"contact_group": "atlantis_apps"}}' > data})
+  #executer.run_in_vm!("#{manager} add-depender-env-data-for-depender-app -a cmk -r hello-go -f data")
+  #executer.run_in_vm!("rm data")
+
 
   #deploy apps
   c = 5
@@ -248,6 +256,11 @@ def start_apps
     c += 5
     m *= 2
   end
+end
+
+def login_zookeeper
+  executer = Executer.new("data")
+  executer.run_in_vm!("/usr/share/zookeeper/bin/zkCli.sh -server zookeeper.aquarium")
 end
 
 if __FILE__ == $0
@@ -291,10 +304,13 @@ if __FILE__ == $0
     register_components
   elsif options["base-cluster"]
     start_apps
+  elsif options["zookeeper"]
+    login_zookeeper
   elsif options["start"]
     components.each do |component|
       component.each_instance(options["--instance"]) do |instance|
         start(instance)
+	sleep(2)
       end
     end
   elsif options["stop"]
@@ -307,6 +323,7 @@ if __FILE__ == $0
     components.each do |component|
       component.each_instance(options["--instance"]) do |instance|
         restart(instance)
+	sleep(2)
       end
     end
   elsif options["atlantis"]

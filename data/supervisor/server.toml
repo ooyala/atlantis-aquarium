@@ -7,7 +7,8 @@
 memory_limit   = 1024            # The total number of Megabytes of memory that supervisor can allocate
 # min_port       = 61000           # The minimum port to use.
 rpc_addr       = ":1337"         # The RPC address to listen on
-registry_host  = "<%= @registry_host %>"     # The Registry to talk to
+registry_host  = "registry.aquarium"     # The Registry to talk to
 region         = "dev"           # The region this supervisor is in
 zone           = "deva"           # The availability zone this supervisor is in
 price		   = 13.37
+#enable_netsec  = true

@@ -2,8 +2,6 @@ require_relative "executer"
 require "fileutils"
 require "openssl"
 
-require_relative './util'
-
 class Provision
   class <<self
     def provision
@@ -22,12 +20,17 @@ class Provision
       configure_docker
       configure_dnsmasq
       configure_parallel
+      configure_zookeeper
     end
 
     def install_go
       executer = Executer.new("data/setup")
-      executer.run_in_vm!("wget -c http://go.googlecode.com/files/go1.2.1.linux-amd64.tar.gz")
-      executer.run_in_vm!("sudo tar -C /usr/local -xzf go1.2.1.linux-amd64.tar.gz")
+
+      #sleep 10 second, waiting for dnsmasq to refresh 
+      executer.run_in_vm!("sleep 10")
+
+      executer.run_in_vm!("wget -c https://storage.googleapis.com/golang/go1.3.3.linux-amd64.tar.gz")
+      executer.run_in_vm!("sudo tar -C /usr/local -xzf go1.3.3.linux-amd64.tar.gz")
       executer.run_in_vm!("echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile")
       puts 'run "source ~/.profile", or log out and back in to activate go'
     end
@@ -39,7 +42,11 @@ class Provision
 
     def setup_conveniences
       executer = Executer.new("data/setup")
-      # Set up nice ssh access
+
+      #setup folder where registry hold docker images
+      executer.run_in_vm!("sudo mkdir -p /atlantis-docker")
+
+      #Set up nice ssh access
       executer.run_in_vm!(%q{cat > ~/.ssh/config <<EOF
         Host 172.17.0.*
         User root
@@ -54,7 +61,7 @@ EOF})
       executer.run_in_vm!("sudo cp squid.conf /etc/squid3")
       executer.run_in_vm!("sudo service squid3 restart")
       # We need to wait while squid starts up in the background
-      sleep 5
+      sleep 15
       # Start squid after the cache directory is mounted
       executer.run_in_vm!("sudo sed -i 's/start on runlevel.*/start on vagrant-mounted/' /etc/init/squid3.conf")
     end
@@ -67,7 +74,7 @@ EOF})
       executer.run_in_vm!("echo 'Acquire::https::Proxy \"https://localhost:3128\";' | " +
                          "sudo tee --append /etc/apt/apt.conf.d/99http-proxy > /dev/null")
       executer.run_in_vm!("sudo apt-get update -qq")
-      executer.run_in_vm!("sudo apt-get install apt-transport-https")
+      executer.run_in_vm!("sudo apt-get install -y apt-transport-https")
       executer.run_in_vm!("sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9")
       executer.run_in_vm!("sudo sh -c 'echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list'")
       executer.run_in_vm!("sudo apt-get update -qq")
@@ -75,13 +82,13 @@ EOF})
 
     def install_docker_lxc
       executer = Executer.new("data/setup")
-      executer.run_in_vm!("sudo apt-get install -y lxc-docker")
+      executer.run_in_vm!("sudo apt-get install -y lxc-docker-1.5.0")
     end
 
 
     def install_misc_packages
       executer = Executer.new("data/setup")
-      packages = %w{vim screen git libzookeeper-mt-dev zookeeper dnsmasq inotify-tools parallel}
+      packages = %w{vim screen git libzookeeper-mt-dev zookeeper dnsmasq inotify-tools apparmor runit}
       executer.run_in_vm!("sudo apt-get install -y #{packages.join(" ")}")
       executer.run_in_vm!("sudo apt-get -y autoremove")
     end
@@ -92,7 +99,7 @@ EOF})
       # Send docker through squid for caching
       executer.run_in_vm!(%q{sudo sed -i '$s#$#\nexport HTTP_PROXY="http://127.0.0.1:3128/"#' /etc/default/docker})
       # Use vagrant's DNS.
-      executer.run_in_vm!(%Q{sudo sed -i '$s#$#\\nexport DOCKER_OPTS="--dns #{Util.docker_host_ip}"#' /etc/default/docker})
+      executer.run_in_vm!(%q{sudo sed -i '$a\export DOCKER_OPTS="--dns 172.17.42.1"' /etc/default/docker})
       executer.run_in_vm!("sudo service docker restart")
     end
 
@@ -102,6 +109,10 @@ EOF})
       executer.run_in_vm!(%q{sudo sh -c "echo 'addn-hosts=/etc/aquarium/hosts-manager' > /etc/dnsmasq.d/aquarium-extra-hosts"})
       executer.run_in_vm!(%q{sudo sh -c "echo 'addn-hosts=/etc/aquarium/hosts-aquarium' >> /etc/dnsmasq.d/aquarium-extra-hosts"})
       executer.run_in_vm!("sudo service dnsmasq restart", :status => 129)
+      executer.run_in_vm!("sudo mkdir -p /etc/aquarium")
+      executer.run_in_vm!("sudo touch /etc/aquarium/hosts-manager")
+      executer.run_in_vm!("sudo touch /etc/aquarium/hosts-aquarium")
+      executer.run_in_vm!("sudo sh -c 'mkdir -p /etc/service/watch-hosts && cp ./watch-hosts.sh /etc/service/watch-hosts/run'")
     end
 
     def configure_parallel
@@ -109,6 +120,15 @@ EOF})
       # Ubuntu configure this wrong by default.
       executer.run_in_vm!("sudo rm -f /etc/parallel/config")
     end
+    
+    def configure_zookeeper
+      executer = Executer.new("data/setup")
+      # change owner of zookeeper log folder so that running zk client in VM won't 
+      # show annoying (though harmless) errors
+      executer.run_in_vm!("sudo chown vagrant:vagrant /var/log/zookeeper")
+    end
+
+
 
     def go_byte_array(bytes)
       bytes = bytes.map { |b|"0x#{b.to_s(16).upcase}" }

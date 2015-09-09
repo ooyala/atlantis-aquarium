@@ -5,7 +5,7 @@
 # rpc_addr               = ":1338"          # The RPC address to listen on
 # api_addr               = ":443"           # The HTTP API address to listen on
 # supervisor_port        = 1337             # The RPC port supervisor listens on
-zookeeper_uri          = "<%= @zookeeper_host %>" # The zookeeper to connect to
+zookeeper_uri            = "zookeeper.aquarium:2181" # The zookeeper to connect to
 # result_duration        = "30m"            # The amount of time to save the results of async commands
 host                   = "aquarium-manager" # This manager's host (used to register itself)
 region                 = "dev"            # The region this manager is in
@@ -22,7 +22,7 @@ available_zones        = "deva"            # The available availability zones fo
 # jenkins_uri            = "jenkins-master.sv2:8080"     # The jenkins uri to hit
 # jenkins_job            = "atlantis-build" # The jenkins job name
 
-simple_builder_host      = "<%= @simple_builder_host %>"
+simple_builder_host      = "builder.aquarium:8080"
 
 #### CGroups
 # cpu_shares_increment   = 5   # The increment in which to allow CPU shares

@@ -128,7 +128,9 @@ class Component
         repo: "atlantis-builder",
         preimage: lambda do |component|
           FileUtils.cp "#{ENV["HOME"]}/.ssh/id_rsa.pub", component.directory
+          status = Status.read
         end,
+
         postimage: lambda do |component|
           FileUtils.rm "#{component.directory}/id_rsa.pub"
         end,
@@ -142,21 +144,12 @@ class Component
         debs: ["atlantis-manager"],
         repo: "atlantis-manager",
         postcompile: lambda do |component|
-           system("sudo cp #{component.repo}/bin/atlantis-manager /usr/local/bin")
+           system("sudo cp #{component.repo}/example/client /usr/local/bin/atlantis-manager")
            system("sudo cp #{component.repo}/lib/atlantis/bin/atlantis /usr/local/bin")
         end,
         preimage: lambda do |component|
           status = Status.read
-          params = {
-            :zookeeper_host => "#{status["zookeeper"]["ip"]}:2181",
-            :simple_builder_host => "#{status["builder"]["ip"]}:8080"
-          }
-          template("#{component.directory}/server.toml", params)
         end,
-        prestart: [ "sudo mkdir -p /etc/aquarium",
-                    "sudo touch /etc/aquarium/hosts-manager",
-                    "killall watch-hosts.sh || true",
-                    "nohup ./watch-hosts.sh > /dev/null & sleep 2"],
         poststart: lambda do |component|
           status = Status.read
           params = { :manager_host => status["manager"]["ip"] }
@@ -166,14 +159,25 @@ class Component
         end,
         docker_opts: "-v /etc/aquarium:/host/etc/aquarium -p 443:443"
       },
-      "registry" => {debs: ["go-docker-registry"],
-                     repo: "go-docker-registry"},
+      "registry" => {
+        debs: ["go-docker-registry"],
+        repo: "go-docker-registry", 
+        preimage: lambda do |component|
+          FileUtils.cp "#{ENV["HOME"]}/.ssh/id_rsa.pub", component.directory
+        end,
+        postimage: lambda do |component|
+          FileUtils.rm "#{component.directory}/id_rsa.pub"
+        end,
+
+        docker_opts: ['-v /atlantis-docker:/atlantis-docker'].join(" ")
+       },	
+
       "router" => {
         debs: ["atlantis-router"],
         repo: "atlantis-router",
         preimage: lambda do |component|
           status = Status.read
-          params = { :zookeeper_host => "#{status["zookeeper"]["ip"]}:2181" }
+          params = { }
           %w{internal external}.each do |group|
             template("#{component.directory}/server.#{group}.toml",
                      "#{component.directory}/server.toml.erb",
@@ -194,14 +198,11 @@ class Component
         repo: "atlantis-supervisor",
         preimage: lambda do |component|
           status = Status.read
-          params = { :registry_host => status["registry"]["ip"] }
-          template("#{component.directory}/server.toml", params)
         end,
         docker_opts: "--privileged",
         instances: {
           "1" => {},
-          "2" => {},
-          "3" => {}
+          "2" => {}
         }
       },
       "zookeeper" => {},

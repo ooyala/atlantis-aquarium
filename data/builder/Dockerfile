@@ -8,15 +8,19 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C2518248EEA14886
 # Set up docker-in-docker
 # Dependency for docker
 RUN apt-get install -y apparmor
+RUN apt-get install -y apt-transport-https
 RUN echo deb http://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
 RUN apt-get update -qq
-RUN apt-get install -qqy --force-yes lxc-docker
+RUN apt-get install -qqy --force-yes lxc-docker-1.5.0
+
 
 # Install java before addiing files for better caching
 RUN echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
 RUN apt-get install oracle-java7-installer -y
 
+
+ADD server.toml /etc/atlantis/builder/server.toml
 ADD atlantis-builder.deb /tmp/atlantis-builder.deb
 RUN dpkg -i /tmp/atlantis-builder.deb || true
 ADD atlantis-builderd.deb /tmp/atlantis-builderd.deb
@@ -31,5 +35,6 @@ ADD id_rsa.pub /opt/atlantis/builder/.ssh/id_rsa.pub
 ADD id_rsa.pub /opt/atlantis/builder/layers/base/root/.ssh/authorized_keys
 
 ADD ./start.sh /usr/local/bin/start.sh
+
 VOLUME /var/lib/docker
 CMD ["bash", "/usr/local/bin/start.sh"]

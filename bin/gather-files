@@ -1,0 +1,61 @@
+#!/usr/bin/env ruby
+
+##
+#
+# This script is used to clone and init all the git repositories atlantis-aqurium
+# needs in order to run "atlantis-aquarium build"
+# 
+# All repos will be placed under $HOME/repos folder 
+#
+##
+
+$repos_home = ENV["ATLANTIS_REPO_ROOT"]
+$repos_home = File.expand_path('~') + "/repos"  if $repos_home.nil? || $repos_home.empty?
+
+def clone_repos
+  
+  #list of git repos aquarium need to be cloned before can run
+  repos = {
+    "go-docker-registry"  => "git@github.com:ooyala/go-docker-registry.git",
+    "atlantis-manager"    => "git@github.com:ooyala/atlantis-manager.git",
+    "atlantis-builder"    => "git@github.com:ooyala/atlantis-builder.git",
+    "atlantis-router"     => "git@github.com:ooyala/atlantis-router.git",
+    "atlantis-supervisor" => "git@github.com:ooyala/atlantis-supervisor.git",
+    "hello-atlantis"      => "git@github.com:ooyala/hello-atlantis.git"
+  }
+
+  repos.each do |repo_name, repo_url|
+    #git clone and init submodules
+    path = "#{$repos_home}/#{repo_name}"
+    unless File.directory?(path)
+      system("git clone #{repo_url} #{path}")
+      system("cd #{path}; git checkout stabilize || true")
+      system("cd #{path}; git submodule update --init")
+    else 
+      puts "#{path} already exists. skip git clone for this folder"	
+    end
+  end
+
+  #create hello-atlantis/hello/go1.2 and check in a new branch
+  #so that "base-cluster" can build the hello-go1.2 app
+
+  hello_path = "#{$repos_home}/hello-atlantis/hello"
+  go_path = "#{hello_path}/go1.2"
+
+  unless File.directory?(go_path)
+    system("cd #{hello_path} && ./_copy")
+    system("cd #{hello_path} && git checkout -b aquarium-test")
+    system("cd #{hello_path} && git add #{go_path} && git commit -a -m 'aquarium add hello-go1.2'")
+  end
+end
+
+def download_tiny
+  # download tiny.tgz which is needed to build base image for atlantis apps
+  tiny_path = "#{$repos_home}/atlantis-aquarium/data/builder/images/tiny.tgz"
+  unless File.exist?(tiny_path)
+    system("curl -kL -o #{tiny_path} https://www.dropbox.com/s/un998n261dfa32y/tiny.tgz?dl=1")
+  end
+end
+
+clone_repos
+download_tiny

@@ -85,7 +85,7 @@ rm -rf /var/run/docker.pid
 
 # And finally, start the Docker daemon aimed at the caching proxy.
 # HTTP_PROXY=http://172.17.42.1:3128 docker -d &
-docker -d &
+docker -d --insecure-registry=registry.aquarium &
 
 # And start up runsv.
 exec runsvdir /etc/service
