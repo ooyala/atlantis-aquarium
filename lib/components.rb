@@ -130,7 +130,6 @@ class Component
           FileUtils.cp "#{ENV["HOME"]}/.ssh/id_rsa.pub", component.directory
           status = Status.read
         end,
-
         postimage: lambda do |component|
           FileUtils.rm "#{component.directory}/id_rsa.pub"
         end,
@@ -161,16 +160,15 @@ class Component
       },
       "registry" => {
         debs: ["go-docker-registry"],
-        repo: "go-docker-registry", 
+        repo: "go-docker-registry",
         preimage: lambda do |component|
           FileUtils.cp "#{ENV["HOME"]}/.ssh/id_rsa.pub", component.directory
         end,
         postimage: lambda do |component|
           FileUtils.rm "#{component.directory}/id_rsa.pub"
         end,
-
         docker_opts: ['-v /atlantis-docker:/atlantis-docker'].join(" ")
-       },	
+       },
 
       "router" => {
         debs: ["atlantis-router"],
@@ -213,4 +211,3 @@ class Component
   end
   setup
 end
-

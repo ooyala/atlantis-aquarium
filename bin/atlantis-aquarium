@@ -76,7 +76,7 @@ def preprocess_arguments_for_commands(args)
     puts "slicing #{arg_index.inspect}"
     return args.slice!(arg_index..-1)
   end
-  return []
+  []
 end
 
 def compile(component)
@@ -235,7 +235,7 @@ def start_apps
 
   # Register apps
   executer.run_in_vm!("#{manager} register-app -a hello-go1.2 -i -r hello/go1.2 -g #{repo_root}/hello-atlantis -e me@example.com")
-    
+
   # TODO(edanaher): Read from stdin.
   #executer.run_in_vm!(%Q{echo '{"Name": "test", "DataMap": {"address": "172.17.0.5"}}' > data})
   #executer.run_in_vm!("#{manager} add-depender-env-data-for-depender-app -a hello-go -r hello-proxy-go -f data")
@@ -310,7 +310,7 @@ if __FILE__ == $0
     components.each do |component|
       component.each_instance(options["--instance"]) do |instance|
         start(instance)
-	sleep(2)
+        sleep(2)
       end
     end
   elsif options["stop"]
@@ -323,7 +323,7 @@ if __FILE__ == $0
     components.each do |component|
       component.each_instance(options["--instance"]) do |instance|
         restart(instance)
-	sleep(2)
+        sleep(2)
       end
     end
   elsif options["atlantis"]

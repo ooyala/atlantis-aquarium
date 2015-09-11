@@ -26,7 +26,7 @@ class Provision
     def install_go
       executer = Executer.new("data/setup")
 
-      #sleep 10 second, waiting for dnsmasq to refresh 
+      # sleep 10 second, waiting for dnsmasq to refresh
       executer.run_in_vm!("sleep 10")
 
       executer.run_in_vm!("wget -c https://storage.googleapis.com/golang/go1.3.3.linux-amd64.tar.gz")
@@ -43,10 +43,10 @@ class Provision
     def setup_conveniences
       executer = Executer.new("data/setup")
 
-      #setup folder where registry hold docker images
+      # setup folder where registry hold docker images
       executer.run_in_vm!("sudo mkdir -p /atlantis-docker")
 
-      #Set up nice ssh access
+      # set up nice ssh access
       executer.run_in_vm!(%q{cat > ~/.ssh/config <<EOF
         Host 172.17.0.*
         User root
@@ -85,7 +85,6 @@ EOF})
       executer.run_in_vm!("sudo apt-get install -y lxc-docker-1.5.0")
     end
 
-
     def install_misc_packages
       executer = Executer.new("data/setup")
       packages = %w{vim screen git libzookeeper-mt-dev zookeeper dnsmasq inotify-tools apparmor runit}
@@ -120,15 +119,13 @@ EOF})
       # Ubuntu configure this wrong by default.
       executer.run_in_vm!("sudo rm -f /etc/parallel/config")
     end
-    
+
     def configure_zookeeper
       executer = Executer.new("data/setup")
-      # change owner of zookeeper log folder so that running zk client in VM won't 
+      # change owner of zookeeper log folder so that running zk client in VM won't
       # show annoying (though harmless) errors
       executer.run_in_vm!("sudo chown vagrant:vagrant /var/log/zookeeper")
     end
-
-
 
     def go_byte_array(bytes)
       bytes = bytes.map { |b|"0x#{b.to_s(16).upcase}" }
