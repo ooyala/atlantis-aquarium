@@ -1,4 +1,3 @@
-
 hostname = "atlantis-aquarium-vm"
 domain   = "local"
 
