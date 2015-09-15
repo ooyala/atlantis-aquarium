@@ -117,7 +117,9 @@ def start(component)
   else
     executer.run_in_vm!("rm -f #{cidfile}")
     docker_opts = "-d -t --cidfile #{cidfile} #{component.docker_opts}"
-    executer.run_in_vm!("docker run #{docker_opts} aquarium-#{component.name}")
+    name = "#{component.name}"
+    name = "#{name}-#{component.instance}" if component.instance
+    executer.run_in_vm!("docker run --name #{name} #{docker_opts} aquarium-#{component.name}")
 
     cid = File.read("#{component.directory}/#{cidfile}").chomp
     ip = executer.capture("docker inspect #{cid} | grep IPAddress | cut -d\\\" -f4")

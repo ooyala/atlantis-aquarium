@@ -1,0 +1,4 @@
+.vagrant
+data/*
+http-cache/*
+
