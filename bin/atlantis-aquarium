@@ -117,8 +117,9 @@ def start(component)
   else
     executer.run_in_vm!("rm -f #{cidfile}")
     docker_opts = "-d -t --cidfile #{cidfile} #{component.docker_opts}"
-    name = "#{component.name}"
-    name = "#{name}-#{component.instance}" if component.instance
+    suffix = Time.now.strftime('%Y%m%d%H%M%S')
+    name = "#{component.name}-#{suffix}"
+    name.sub!(/^([^-]*-)/, "\\1#{component.instance}-") if component.instance
     executer.run_in_vm!("docker run --name #{name} #{docker_opts} aquarium-#{component.name}")
 
     cid = File.read("#{component.directory}/#{cidfile}").chomp
