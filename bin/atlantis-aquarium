@@ -128,7 +128,7 @@ def start(component)
     executer.run_in_vm!("docker run --name #{name} #{docker_opts} aquarium-#{component.name}")
 
     cid = File.read("#{component.directory}/#{cidfile}").chomp
-    ip = executer.capture("docker inspect #{cid} | grep IPAddress | cut -d\\\" -f4")
+    ip = executer.capture("docker inspect --format '{{.NetworkSettings.IPAddress}}' #{cid}")
     File.write("#{component.directory}/#{ipfile}", ip)
     component.set_value("cid", cid.chomp)
     component.set_value("ip", ip.chomp)
