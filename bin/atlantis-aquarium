@@ -61,10 +61,10 @@ end
 # So we figure out where the command starts, and slice them out of ARGV before docopt.
 def preprocess_arguments_for_commands(args)
   # All arguments should be passed through to the atlantis command.
-  if args[0] == "atlantis"
+  if args.first == "atlantis"
     return args.slice!(1..-1)
   end
-  if args[0] == "ssh"
+  if args.first == "ssh"
     arg_index = 1
     arg_index += 1 if Component.names.include?(args[1]) # Skip <component>, if it exists
     while arg_index < args.length
@@ -101,6 +101,13 @@ def build_image(component, options)
   component.postimage.call(executer)
 end
 
+def get_container_name(component)
+  suffix = Time.now.strftime('%Y%m%d%H%M%S')
+  name = "#{component.name}-#{suffix}"
+  name.sub!(/^([^-]*-)/, "\\1#{component.instance}-") if component.instance
+  name
+end
+
 def start(component)
   return if component.name == "base-aquarium-image" # This one doesn't make sense to deploy.
   component.set_status("starting")
@@ -117,9 +124,7 @@ def start(component)
   else
     executer.run_in_vm!("rm -f #{cidfile}")
     docker_opts = "-d -t --cidfile #{cidfile} #{component.docker_opts}"
-    suffix = Time.now.strftime('%Y%m%d%H%M%S')
-    name = "#{component.name}-#{suffix}"
-    name.sub!(/^([^-]*-)/, "\\1#{component.instance}-") if component.instance
+    name = get_container_name(component)
     executer.run_in_vm!("docker run --name #{name} #{docker_opts} aquarium-#{component.name}")
 
     cid = File.read("#{component.directory}/#{cidfile}").chomp
@@ -340,9 +345,9 @@ if __FILE__ == $0
         system(trailing_args.join(" "))
       end
     else
-      components[0].each_instance(options["--instance"]) do |instance|
+      components.first.each_instance(options["--instance"]) do |instance|
         instance_name = instance.instance ? "-#{instance.instance}" : ""
-        puts "== ssh #{components[0].name}#{instance_name} =="
+        puts "== ssh #{components.first.name}#{instance_name} =="
         status = Status.read
         info = status[instance.name]
         info = info[instance.instance] if instance.instance
