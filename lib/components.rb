@@ -13,13 +13,9 @@ class Component
   #                 Remove when that transition completes.
   def wrap_in_function(operation)
     if operation.is_a?(Array) || operation.is_a?(String)
-      lambda do |executer|
-        executer.run_in_vm!(operation)
-      end
+      lambda { |executer| executer.run_in_vm!(operation) }
     else
-      lambda do |executer|
-        operation.call(self) if operation
-      end
+      lambda { |executer| operation.call(self) if operation }
     end
   end
 
@@ -37,14 +33,14 @@ class Component
     @postimage = wrap_in_function(options[:postimage])
     @prestart = wrap_in_function(options[:prestart])
     @poststart = wrap_in_function(options[:poststart])
+    @instances = {nil => self}
+
     if options[:instances]
       suboptions = options.dup
       suboptions.delete(:instances)
       @instances = Hash[options[:instances].map do |instance, instance_options|
         [instance, Component.new(name, suboptions.merge(instance_options).merge({instance: instance}))]
       end]
-    else
-      @instances = {nil => self}
     end
   end
 
@@ -74,11 +70,11 @@ class Component
   end
 
   def self.all
-    return @@components.values
+    @@components.values
   end
 
   def self.[](name, options = {})
-    return @@components[name]
+    @@components[name]
   end
 
   def self.names
