@@ -48,10 +48,7 @@ class Executer
   end
 
   def cd(path)
-    if path[0] == '/'
-      @cwd = path
-    else
-      @cwd += "/#{path}"
-    end
+    @cwd += "/#{path}"
+    @cwd = path if path[0] == '/'
   end
 end
