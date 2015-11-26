@@ -24,8 +24,7 @@ def clone_repos
     path = "#{$repos_home}/#{repo_name}"
     unless File.directory?(path)
       system("git clone #{repo_url} #{path}")
-      system("cd #{path}; git checkout stabilize || true")
-      system("cd #{path}; git submodule update --init")
+      system("cd #{path}; git checkout master || true")
     else
       puts "#{path} already exists. skip git clone for this folder"
     end
