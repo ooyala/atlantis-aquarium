@@ -16,13 +16,13 @@ You can install aquarium in the following approaches:
 #Vagrant
 We have a vagrant box available. To run it,
  * create **$HOME/repos** folder and clone atlantis-aquarium repo under this folder
- * enter atlantis-aquarium folder and run **launch-aquairum.sh** script
+ * enter atlantis-aquarium folder and run **launch-aquarium.sh** script
 
 ## What is inside the vagrant box
 Once the atlantis-aquarium vagrant box is up and running, it runs a zookeeper, a docker registry, an atlantis-builder, an atlantis-manager, two routers (one internal and one external) and two atlantis-supervisors.  Each component lives within a docker container.
 
 ##FAQ
-### lanuch-aquarium.sh gets killed while downloading vagrant box, and re-running the script gives an error
+### launch-aquarium.sh gets killed while downloading vagrant box, and re-running the script gives an error
 ```
 => default: Box download is resuming from prior download progress
 An error occurred while downloading the remote file. The error
