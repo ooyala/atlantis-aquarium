@@ -291,6 +291,14 @@ $bin/atlantis-aquarium base-cluster
 $vagrant ssh
 $/usr/share/zookeeper/bin/zkCli.sh -server `cat data/zookeeper/ip`
 $delete /atlantis/supervisors/dev/172.17.0.8
+```
+3. You have moved machines and launch throws UID Error
+The VirtualBox VM was created with a user that doesn't match the
+current user running Vagrant....
+```
+$cd $HOME/repos/atlantis-aquarium/.vagrant/machines/aquarium/virtualbox
+edit the file creator_uid and replace the uid there with the uid of the current user
+verify by running vagrant up
 
 ```
-
+```
